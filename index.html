@@ -49,9 +49,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .wc-card:hover .wc-arrow{opacity:1;transform:translateX(0)}
 .wc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);margin-bottom:4px;line-height:1}
 .wc-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
-.wc-flags{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
-.wc-flag-dot{width:6px;height:6px;border-radius:50%}
 .wc-arrow{font-size:18px;color:var(--accent);position:absolute;right:16px;top:50%;transform:translateY(-50%) translateX(4px);opacity:0;transition:all 0.15s}
+.wc-card-special{cursor:default;opacity:0.85}
+.wc-card-special:hover{border-color:var(--border);background:var(--bg2)}
 
 /* FIGHTER LIST + DETAIL (two panel) */
 .fighters-two-panel{flex:1;overflow:hidden;display:flex}
@@ -598,7 +598,11 @@ const CHAMPIONS={
   "Women's Strawweight":{name:'Mackenzie Dern',img:'w-strawweight.png'},
   "Women's Flyweight":{name:'Valentina Shevchenko',img:'w-flyweight.png'},
   "Women's Bantamweight":{name:'Kayla Harrison',img:'w-bantamweight.png'},
+  'BMF':{name:'Max Holloway',img:'bmf.png'},
+  'P4P':{name:'Islam Makhachev',img:'pfp.png'},
 };
+const VACANT_IMG='https://images.foxtv.com/static.livenowfox.com/www.livenowfox.com/content/uploads/2024/08/1280/720/Spirit-Halloween-store.jpg?ve=1&tl=1';
+const SPECIAL_DIVISIONS=['BMF','P4P'];
 
 const flagEmoji={ASCENDING:'🟢',DESCENDING:'🔴',FADING:'🔴',MONITOR:'🔵',STANDOUT:'⭐',AVOID:'❌',NEUTRAL:'⚪'};
 
@@ -705,34 +709,38 @@ function renderWCGrid(){
     if(bi===-1)return -1;
     return ai-bi;
   });
+  // Add BMF and P4P as special non-clickable cards at the end
+  SPECIAL_DIVISIONS.forEach(div=>{
+    const champ=CHAMPIONS[div];
+    if(champ&&!sorted.find(([wc])=>wc===div)){
+      sorted.push([div,[]]);
+    }
+  });
   grid.innerHTML=sorted.map(([wc,fighters])=>{
-    const asc=fighters.filter(f=>f.flag_type==='ASCENDING').length;
-    const desc=fighters.filter(f=>['DESCENDING','FADING'].includes(f.flag_type)).length;
-    const mon=fighters.filter(f=>f.flag_type==='MONITOR').length;
-    let dots='';
-    for(let i=0;i<Math.min(asc,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--green)"></div>`;
-    for(let i=0;i<Math.min(desc,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--red)"></div>`;
-    for(let i=0;i<Math.min(mon,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--blue)"></div>`;
+    const isSpecial=SPECIAL_DIVISIONS.includes(wc);
     const champ=CHAMPIONS[wc];
     let champHtml='';
-    if(champ&&champ.img){
+    if(champ&&champ.name==='Vacant'){
+      champHtml=`<img class="wc-champ-img" src="${VACANT_IMG}" alt="Vacant" loading="lazy">`;
+    } else if(champ&&champ.img){
       champHtml=`<img class="wc-champ-img" src="${CHAMP_BASE}${champ.img}" alt="${champ.name}" loading="lazy">`;
     }
     let champLabel='';
-    if(champ){
-      champLabel=champ.name==='Vacant'
-        ?`<div class="wc-champ-vacant">Vacant</div>`
-        :`<div class="wc-champ-name">${champ.name}</div>`;
+    if(champ&&champ.name==='Vacant'){
+      champLabel=`<div class="wc-champ-vacant">Vacant</div>`;
+    } else if(isSpecial&&champ){
+      champLabel=`<div class="wc-champ-name">${champ.name}</div>`;
     }
-    return `<div class="wc-card" onclick="openWC('${wc.replace(/'/g,"\\'")}')">
+    const onclick=isSpecial?'':`onclick="openWC('${wc.replace(/'/g,"\\'")}')"`;
+    const cardCls='wc-card'+(isSpecial?' wc-card-special':'');
+    return `<div class="${cardCls}" ${onclick}>
       ${champHtml}
       <div style="flex:1;min-width:0">
         <div class="wc-name">${wc}</div>
         ${champLabel}
-        <div class="wc-count">${fighters.length} fighter${fighters.length!==1?'s':''}</div>
-        ${dots?`<div class="wc-flags">${dots}</div>`:''}
+        ${!isSpecial?`<div class="wc-count">${fighters.length} fighter${fighters.length!==1?'s':''}</div>`:''}
       </div>
-      <div class="wc-arrow">→</div>
+      ${!isSpecial?`<div class="wc-arrow">→</div>`:''}
     </div>`;
   }).join('');
 }
