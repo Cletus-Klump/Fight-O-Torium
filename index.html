@@ -229,11 +229,26 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .saved-parlay-odds{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
 .saved-parlay-legs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
 .parlay-leg-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--text2);}
+
+/* HOME PAGE */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.home-hero{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 32px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
+.home-hero:hover{border-color:var(--accent);background:var(--bg3)}
+.home-hero-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.home-hero-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:1.1;margin-bottom:8px}
+.home-hero-meta{font-size:13px;color:var(--text2);line-height:1.6}
+.home-hero-arrow{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--accent);opacity:0;transition:opacity 0.15s}
+.home-hero:hover .home-hero-arrow{opacity:1}
+.home-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;transition:all 0.15s}
+.home-card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.home-record{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px}
+.home-record-meta{font-size:13px;color:var(--text2);margin-top:6px}
+.home-placeholder{color:var(--text3);font-size:13px;font-style:italic}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="logo">
+  <div class="logo" onclick="showPage('home',document.querySelector('.nav-btn'))" style="cursor:pointer;">
     <svg width="340" height="44" viewBox="0 0 340 44" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="hr2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#ff6b6b"/><stop offset="100%" style="stop-color:#990000"/></linearGradient>
@@ -277,7 +292,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     </svg>
   </div>
   <nav class="nav">
-    <button class="nav-btn active" onclick="showPage('fighters',this)">Fighters</button>
+    <button class="nav-btn active" onclick="showPage('home',this)">Home</button>
+    <button class="nav-btn" onclick="showPage('fighters',this)">Fighters</button>
     <button class="nav-btn" onclick="showPage('cards',this)">Cards</button>
     <button class="nav-btn" onclick="showPage('compare',this)">Compare</button>
   </nav>
@@ -286,8 +302,15 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 
 <div class="app">
 
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+    <div style="flex:1;overflow-y:auto;padding:28px 32px;">
+      <div id="homeContent"></div>
+    </div>
+  </div>
+
   <!-- FIGHTERS PAGE -->
-  <div class="page active" id="page-fighters">
+  <div class="page" id="page-fighters">
     <div class="fighters-topbar">
       <input type="text" class="search-input" id="fighterSearch" placeholder="Search fighters..." oninput="onSearchInput()">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
@@ -565,6 +588,7 @@ async function init(){
   try{
     await Promise.all([loadFighters(),loadCards(),loadPicks()]);
     setConn(true);
+    renderHome();
   }catch(e){setConn(false);toast('Connection error','error');console.error(e)}
 }
 
@@ -573,11 +597,60 @@ function setConn(ok){
   document.getElementById('connLabel').textContent=ok?'connected':'offline';
 }
 
+function renderHome(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=allCards.filter(c=>new Date(c.date+'T00:00:00')>=today).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const past=allCards.filter(c=>new Date(c.date+'T00:00:00')<today).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  let html='';
+
+  // This Week's Card (hero)
+  if(upcoming.length){
+    const card=upcoming[0];
+    const d=new Date(card.date+'T00:00:00');
+    const dayName=d.toLocaleDateString('en-US',{weekday:'long'});
+    const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    html+=`<div class="home-hero" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+      <div class="home-hero-label">This Week's Card</div>
+      <div class="home-hero-name">${card.name}</div>
+      <div class="home-hero-meta">${dayName}, ${dateStr}${card.venue?' · '+card.venue:''}</div>
+      <div class="home-hero-arrow">→</div>
+    </div>`;
+  } else {
+    html+=`<div class="home-card"><div class="home-card-title">This Week's Card</div><div class="home-placeholder">No upcoming cards</div></div>`;
+  }
+
+  html+='<div class="home-grid">';
+
+  // Last Week's Record
+  if(past.length){
+    const card=past[0];
+    const cp=allPicks.filter(p=>p.card_id===card.id);
+    const w=cp.filter(p=>p.result==='W').length,l=cp.filter(p=>p.result==='L').length,pass=cp.filter(p=>p.result==='P').length;
+    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+      <div class="home-card-title">Last Card</div>
+      <div class="home-record"><span class="result-W">${w}W</span> — <span class="result-L">${l}L</span> — <span class="result-P">${pass}P</span></div>
+      <div class="home-record-meta">${card.name}</div>
+    </div>`;
+  } else {
+    html+=`<div class="home-card"><div class="home-card-title">Last Card</div><div class="home-placeholder">No past cards</div></div>`;
+  }
+
+  // Main Event placeholder
+  html+=`<div class="home-card"><div class="home-card-title">Main Event</div><div class="home-placeholder">Coming soon</div></div>`;
+
+  // Hot Matchup placeholder
+  html+=`<div class="home-card"><div class="home-card-title">Hot Matchup</div><div class="home-placeholder">Coming soon</div></div>`;
+
+  html+='</div>';
+  document.getElementById('homeContent').innerHTML=html;
+}
+
 function showPage(page,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   btn.classList.add('active');
+  if(page==='home')renderHome();
   if(page==='cards'){renderCards();document.getElementById('cardsListView').style.display='block';document.getElementById('cardsDetailView').style.display='none';}
   if(page==='compare')populateCompareSelects();
   if(page==='fighters'){
