@@ -1497,11 +1497,16 @@ function toLocalDateStr(isoStr) {
 }
 
 // Filter odds fights by date: try local date first, fall back to UTC prefix if no local matches
+// Deduplicates by event ID to prevent double-counting when UTC/local boundaries overlap
 function filterFightsByDate(fights, cardDate) {
   const localMatches = fights.filter(f => toLocalDateStr(f.commence_time) === cardDate);
-  if (localMatches.length > 0) return localMatches;
-  // Fallback: UTC prefix match (handles cards saved with UTC dates)
-  return fights.filter(f => f.commence_time.startsWith(cardDate));
+  const matches = localMatches.length > 0 ? localMatches : fights.filter(f => f.commence_time.startsWith(cardDate));
+  const seen = new Set();
+  return matches.filter(f => {
+    if (seen.has(f.id)) return false;
+    seen.add(f.id);
+    return true;
+  });
 }
 
 function fuzzyMatchFighter(name, apiName) {
@@ -1593,7 +1598,10 @@ async function openImportCardModal(forceRender=false) {
   }
   importOddsData = data; // always set regardless of cache/live source
   const eventGroups = {};
+  const seenIds = new Set();
   data.forEach(fight => {
+    if (seenIds.has(fight.id)) return; // deduplicate by event ID
+    seenIds.add(fight.id);
     const date = toLocalDateStr(fight.commence_time);
     if (!eventGroups[date]) eventGroups[date] = [];
     eventGroups[date].push(fight);
