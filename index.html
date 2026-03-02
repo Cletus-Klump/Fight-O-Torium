@@ -1120,10 +1120,10 @@ function getParlayMeme(lines) {
   const parsed = lines.map(l => parseInt(l));
   const chalkCount = parsed.filter(v => v <= -275).length;
   const dogCount = parsed.filter(v => v >= 300).length;
-  const isChalk = chalkCount / lines.length >= 0.7;
+  const isChalk = chalkCount / lines.length >= 0.75;
   const isDog = dogCount >= 3;
-  if (isChalk && isDog) return { src: MEME_GOKU, label: 'Lol Meme Goku', caption: 'LOL WTF is this?' };
-  if (isChalk) return { src: MEME_SQUIDWARD, label: 'Handsome Squidward', caption: '70%+ of your picks are -275 or worse. Very distinguished.' };
+  if (isChalk && isDog) return { src: MEME_GOKU, label: 'LOL', caption: 'WTF is this?' };
+  if (isChalk) return { src: MEME_SQUIDWARD, label: 'Very Distinguished', caption: '75%+ of your picks are -275 or worse.' };
   if (isDog) return { src: MEME_PATRICK, label: 'Pinhead Larry', caption: "Who you callin' Pinhead?" };
   return null;
 }
