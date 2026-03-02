@@ -1,0 +1,106 @@
+F
+I
+G
+H
+T
+-
+O
+-
+T
+O
+R
+I
+U
+M
+FIGHTERS
+CARDS
+COMPARE
+
+connecting...
+SEARCH
+A–Z
+WEIGHT CLASS
+DIVISION
+All Divisions
+0
+Strawweight
+0
+Flyweight
+0
+Bantamweight
+0
+Featherweight
+0
+Lightweight
+0
+Welterweight
+0
+Middleweight
+0
+Light HW
+0
+Heavyweight
+0
+
+Loading...
+Fighter Database
+— fighters tracked
++ ADD FIGHTER
+🥊
+Select a fighter from the sidebar
+or add a new one to get started
+Add Fighter
+✕
+NAME *
+
+WEIGHT CLASS
+Select...StrawweightFlyweightBantamweightFeatherweightLightweightWelterweightMiddleweightLight HeavyweightHeavyweight
+CAMP / TEAM
+
+AGE
+
+REACH
+
+FLAG TYPE
+NeutralAscendingDescendingFadingMonitorStandoutAvoid
+FLAG DETAIL
+NOTES
+CANCELSAVE FIGHTER
+Log Card
+✕
+EVENT NAME *
+
+DATE *
+VENUE
+
+NOTES
+CANCELSAVE CARD
+Log Pick
+✕
+CARD / EVENT *
+Select card...
+WEIGHT CLASS
+Select...StrawweightFlyweightBantamweightFeatherweightLightweightWelterweightMiddleweightLight HeavyweightHeavyweight
+FIGHTER A *
+Select...
+FIGHTER B *
+Select...
+YOUR PICK *
+Select...
+LINE
+
+CONFIDENCE
+StrongLeanTossupPass
+PARLAY CANDIDATE?
+NoYes
+FAILURE MODE (REQUIRED IF DOG OR -200+)
+
+RESULT — FILL IN AFTER THE FIGHT
+RESULT
+PendingWin (Hit)Loss (Miss)Pass
+METHOD
+—KO/TKOSubmissionDecision (UD)Decision (SD)Decision (MD)DQNC
+ROUND
+—R1R2R3R4R5
+NOTES
+CANCELSAVE PICK
