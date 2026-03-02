@@ -1490,28 +1490,45 @@ async function getOddsCacheInfo() {
   } catch(e) { return null; }
 }
 
+// Convert UTC ISO timestamp to user's local YYYY-MM-DD string
+function toLocalDateStr(isoStr) {
+  const d = new Date(isoStr);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// Filter odds fights by date: try local date first, fall back to UTC prefix if no local matches
+function filterFightsByDate(fights, cardDate) {
+  const localMatches = fights.filter(f => toLocalDateStr(f.commence_time) === cardDate);
+  if (localMatches.length > 0) return localMatches;
+  // Fallback: UTC prefix match (handles cards saved with UTC dates)
+  return fights.filter(f => f.commence_time.startsWith(cardDate));
+}
+
 function fuzzyMatchFighter(name, apiName) {
-  const norm = s => s.toLowerCase().replace(/[^a-z ]/g, '').trim();
+  // NFD normalization: strip diacritical combining marks so "José" matches "Jose"
+  const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z ]/g, '').trim();
   const a = norm(name), b = norm(apiName);
   if (!a || !b) return false;
   // Exact normalized match
   if (a === b) return true;
   // Substring match — only if the shorter name is at least 80% of the longer
-  // (handles middle names/initials but blocks "johnson" matching "charles johnson")
   const shorter = a.length <= b.length ? a : b;
   const longer  = a.length <= b.length ? b : a;
   if (longer.includes(shorter) && shorter.length / longer.length >= 0.8) return true;
-  // Last name + first name match (not just initial — require first 3 chars)
+  // Last name + first name match
   const aWords = a.split(' ').filter(Boolean);
   const bWords = b.split(' ').filter(Boolean);
   if (aWords.length < 2 || bWords.length < 2) return false;
   const aLast = aWords[aWords.length - 1];
   const bLast = bWords[bWords.length - 1];
-  if (aLast !== bLast || aLast.length < 4) return false;
-  // Require first 3 chars of first name to match (not just initial)
+  if (aLast !== bLast || aLast.length < 2) return false;
+  // First 3 chars of first name match
   const aFirst = aWords[0].slice(0, 3);
   const bFirst = bWords[0].slice(0, 3);
-  return aFirst === bFirst;
+  if (aFirst === bFirst) return true;
+  // First-initial fallback for long last names (≥5 chars) — "Alex Pereira" vs "Alexandre Pereira"
+  if (aLast.length >= 5 && aWords[0][0] === bWords[0][0]) return true;
+  return false;
 }
 
 function findOddsForFighters(oddsData, nameA, nameB) {
@@ -1577,7 +1594,7 @@ async function openImportCardModal(forceRender=false) {
   importOddsData = data; // always set regardless of cache/live source
   const eventGroups = {};
   data.forEach(fight => {
-    const date = fight.commence_time.substring(0, 10);
+    const date = toLocalDateStr(fight.commence_time);
     if (!eventGroups[date]) eventGroups[date] = [];
     eventGroups[date].push(fight);
   });
@@ -1616,7 +1633,7 @@ function showImportEventDetail(idx) {
   if (!importOddsData) { toast('Odds data not loaded — try reopening the importer', 'error'); return; }
   const date = (window._importSortedDates || [])[idx];
   if (!date) { toast('Event not found', 'error'); return; }
-  const fights = importOddsData.filter(f => f.commence_time.startsWith(date));
+  const fights = filterFightsByDate(importOddsData, date);
   if (!fights.length) { toast('No fights found for this date', 'error'); return; }
   fights.sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time));
 
@@ -1800,7 +1817,7 @@ async function confirmFighterReview(count) {
 }
 
 async function createPicksForCard(cardId, date) {
-  const fights = importOddsData.filter(f => f.commence_time.startsWith(date));
+  const fights = filterFightsByDate(importOddsData, date);
   let created = 0, skipped = 0;
   for (const fight of fights) {
     const fA = allFighters.find(f => fuzzyMatchFighter(fight.home_team, f.name));
@@ -1841,7 +1858,7 @@ async function saveImportedCard(date) {
   const name = document.getElementById('importSaveName').value.trim();
   const saveDate = document.getElementById('importSaveDate').value;
   if (!name || !saveDate) { toast('Name and date required', 'error'); return; }
-  const fights = importOddsData.filter(f => f.commence_time.startsWith(date));
+  const fights = filterFightsByDate(importOddsData, date);
 
   try {
     const cardRows = await sbPost('cards', {
@@ -2034,9 +2051,9 @@ async function syncCard() {
     const odds = await fetchOdds();
     if (!odds) { toast('Could not fetch odds', 'error'); return; }
 
-    // Get all fights from API matching this card's date
+    // Get all fights from API matching this card's date (local time, with UTC fallback)
     const cardDate = card.date; // e.g. "2026-03-07"
-    const apiFights = odds.filter(f => f.commence_time.startsWith(cardDate));
+    const apiFights = filterFightsByDate(odds, cardDate);
 
     const existingPicks = allPicks.filter(p => p.card_id === currentCardId);
 
@@ -2138,15 +2155,43 @@ function renderSyncModal(newFights, linesUpdated, date) {
 
 async function confirmSyncNewFights() {
   const fights = window._syncNewFights || [];
-  let added = 0, skipped = 0;
+  let added = 0, skipped = 0, created = 0;
 
   for (let i = 0; i < fights.length; i++) {
     const cb = document.getElementById(`syncCb_${i}`);
     if (!cb?.checked) { skipped++; continue; }
 
     const fight = fights[i];
-    const fA = allFighters.find(f => fuzzyMatchFighter(fight.home_team, f.name));
-    const fB = allFighters.find(f => fuzzyMatchFighter(fight.away_team, f.name));
+    const wc = document.getElementById(`syncWC_${i}`)?.value || null;
+
+    // Auto-create missing fighters instead of inserting null IDs
+    let fA = allFighters.find(f => fuzzyMatchFighter(fight.home_team, f.name));
+    if (!fA) {
+      try {
+        const rows = await sbPost('fighters', {
+          name: fight.home_team, flag_type: 'NEUTRAL', weight_class: wc,
+          camp: null, age: null, reach: null,
+          notes: 'Auto-created via Sync Card — add flags and notes after watching.',
+          flag_detail: null
+        });
+        if (rows?.[0]) { fA = rows[0]; allFighters.push(fA); created++; }
+      } catch(e) { console.warn('Auto-create fighter failed:', fight.home_team, e.message); }
+    }
+
+    let fB = allFighters.find(f => fuzzyMatchFighter(fight.away_team, f.name));
+    if (!fB) {
+      try {
+        const rows = await sbPost('fighters', {
+          name: fight.away_team, flag_type: 'NEUTRAL', weight_class: wc,
+          camp: null, age: null, reach: null,
+          notes: 'Auto-created via Sync Card — add flags and notes after watching.',
+          flag_detail: null
+        });
+        if (rows?.[0]) { fB = rows[0]; allFighters.push(fB); created++; }
+      } catch(e) { console.warn('Auto-create fighter failed:', fight.away_team, e.message); }
+    }
+
+    if (!fA || !fB) { skipped++; continue; }
 
     const dk = fight.bookmakers?.find(b => b.key === 'draftkings');
     const market = dk?.markets?.find(m => m.key === 'h2h');
@@ -2159,24 +2204,28 @@ async function confirmSyncNewFights() {
     try {
       await sbPost('picks', {
         card_id: currentCardId,
-        fighter_a_id: fA?.id || null,
-        fighter_b_id: fB?.id || null,
+        fighter_a_id: fA.id,
+        fighter_b_id: fB.id,
         picked_fighter_id: null,
-        weight_class: document.getElementById(`syncWC_${i}`)?.value || null,
+        weight_class: wc,
         line: getLine(fight.home_team),
         confidence: 'Lean',
         parlay_candidate: false,
         result: null,
-        notes: `Lines: ${getLine(fight.home_team)||'?'} / ${getLine(fight.away_team)||'?'} · Pending analysis${!fA||!fB?' · ⚠ Fighter(s) not in DB':''}`
+        notes: `Lines: ${getLine(fight.home_team)||'?'} / ${getLine(fight.away_team)||'?'} · Pending analysis`
       });
       added++;
     } catch(e) { skipped++; }
   }
 
+  if (created) await loadFighters();
   await loadPicks();
   closeModal('syncCardModal');
   showCardDetail(currentCardId);
-  toast(`${added} matchup${added!==1?'s':''} added${skipped?' · '+skipped+' skipped':''}`, 'success');
+  const parts = [`${added} matchup${added!==1?'s':''} added`];
+  if (created) parts.push(`${created} fighter${created!==1?'s':''} auto-created`);
+  if (skipped) parts.push(`${skipped} skipped`);
+  toast(parts.join(' · '), 'success');
   window._syncNewFights = [];
 }
 
