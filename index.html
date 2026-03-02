@@ -43,8 +43,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .weightclass-grid{flex:1;overflow-y:auto;padding:28px 32px}
 .weightclass-grid-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:var(--text);margin-bottom:6px}
 .weightclass-grid-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:28px;letter-spacing:1px}
-.wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.wc-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px 22px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
+.wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.wc-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px}
 .wc-card:hover{border-color:var(--accent);background:var(--bg3)}
 .wc-card:hover .wc-arrow{opacity:1;transform:translateX(0)}
 .wc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);margin-bottom:4px;line-height:1}
@@ -244,17 +244,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-record{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px}
 .home-record-meta{font-size:13px;color:var(--text2);margin-top:6px}
 .home-placeholder{color:var(--text3);font-size:13px;font-style:italic}
-.champ-section{margin-top:28px}
-.champ-section-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
-.champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.champ-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 10px 10px;text-align:center;transition:all 0.15s;cursor:pointer;overflow:hidden}
-.champ-card:hover{border-color:var(--accent);background:var(--bg3)}
-.champ-card.vacant{opacity:0.4;cursor:default}
-.champ-card.vacant:hover{border-color:var(--border);background:var(--bg2)}
-.champ-img{width:100px;height:100px;object-fit:cover;object-position:top;border-radius:6px;margin-bottom:8px;background:var(--bg3)}
-.champ-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;line-height:1.2;margin-bottom:3px}
-.champ-div{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
-.champ-card.special .champ-div{color:var(--gold,#e8c84a)}
+.wc-champ-img{width:70px;height:70px;object-fit:cover;object-position:top;border-radius:6px;background:var(--bg3);flex-shrink:0}
+.wc-champ-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;margin-top:2px}
+.wc-champ-vacant{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px;font-style:italic}
 </style>
 </head>
 <body>
@@ -593,6 +585,21 @@ let allFighters=[],allCards=[],allPicks=[],selectedFighterId=null,editingFighter
 
 const weightOrder=['Strawweight','Flyweight','Bantamweight','Featherweight','Lightweight','Welterweight','Middleweight','Light Heavyweight','Heavyweight',"Women's Strawweight","Women's Flyweight","Women's Bantamweight","Women's Featherweight"];
 
+const CHAMP_BASE=SUPABASE_URL+'/storage/v1/object/public/champion-images/';
+const CHAMPIONS={
+  'Flyweight':{name:'Joshua Van',img:'flyweight.png'},
+  'Bantamweight':{name:'Petr Yan',img:'bantamweight.png'},
+  'Featherweight':{name:'Alexander Volkanovski',img:'featherweight.png'},
+  'Lightweight':{name:'Ilia Topuria',img:'lightweight.png'},
+  'Welterweight':{name:'Islam Makhachev',img:'welterweight.png'},
+  'Middleweight':{name:'Khamzat Chimaev',img:'middleweight.png'},
+  'Light Heavyweight':{name:'Vacant',img:null},
+  'Heavyweight':{name:'Tom Aspinall',img:'heavyweight.png'},
+  "Women's Strawweight":{name:'Mackenzie Dern',img:'w-strawweight.png'},
+  "Women's Flyweight":{name:'Valentina Shevchenko',img:'w-flyweight.png'},
+  "Women's Bantamweight":{name:'Kayla Harrison',img:'w-bantamweight.png'},
+};
+
 const flagEmoji={ASCENDING:'🟢',DESCENDING:'🔴',FADING:'🔴',MONITOR:'🔵',STANDOUT:'⭐',AVOID:'❌',NEUTRAL:'⚪'};
 
 async function init(){
@@ -654,39 +661,6 @@ function renderHome(){
 
   html+='</div>';
 
-  // Champions grid
-  const champBase=SUPABASE_URL+'/storage/v1/object/public/champion-images/';
-  const champs=[
-    {div:'Flyweight',name:'Joshua Van',img:'flyweight.png'},
-    {div:'Bantamweight',name:'Petr Yan',img:'bantamweight.png'},
-    {div:'Featherweight',name:'Alexander Volkanovski',img:'featherweight.png'},
-    {div:'Lightweight',name:'Ilia Topuria',img:'lightweight.png'},
-    {div:'Welterweight',name:'Islam Makhachev',img:'welterweight.png'},
-    {div:'Middleweight',name:'Khamzat Chimaev',img:'middleweight.png'},
-    {div:'Light Heavyweight',name:'Vacant',img:null,vacant:true},
-    {div:'Heavyweight',name:'Tom Aspinall',img:'heavyweight.png'},
-    {div:"W Strawweight",name:'Mackenzie Dern',img:'w-strawweight.png'},
-    {div:"W Flyweight",name:'Valentina Shevchenko',img:'w-flyweight.png'},
-    {div:"W Bantamweight",name:'Kayla Harrison',img:'w-bantamweight.png'},
-    {div:'BMF',name:'Max Holloway',img:'bmf.png',special:true},
-    {div:'P4P',name:'Islam Makhachev',img:'pfp.png',special:true},
-  ];
-  html+=`<div class="champ-section">
-    <div class="champ-section-title">Current Champions</div>
-    <div class="champ-grid">
-      ${champs.map(c=>{
-        const cls='champ-card'+(c.vacant?' vacant':'')+(c.special?' special':'');
-        const fighter=c.vacant?null:allFighters.find(f=>fuzzyMatchFighter(f.name,c.name));
-        const onclick=fighter?` onclick="showPage('fighters',document.querySelectorAll('.nav-btn')[1]);showFighterDetail('${fighter.id}')"`:c.vacant?'':'';
-        return `<div class="${cls}"${onclick}>
-          ${c.img?`<img class="champ-img" src="${champBase}${c.img}" alt="${c.name}" loading="lazy">`:`<div class="champ-img" style="display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;margin:0 auto 8px;">—</div>`}
-          <div class="champ-name">${c.name}</div>
-          <div class="champ-div">${c.div}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-
   document.getElementById('homeContent').innerHTML=html;
 }
 
@@ -739,10 +713,25 @@ function renderWCGrid(){
     for(let i=0;i<Math.min(asc,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--green)"></div>`;
     for(let i=0;i<Math.min(desc,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--red)"></div>`;
     for(let i=0;i<Math.min(mon,5);i++)dots+=`<div class="wc-flag-dot" style="background:var(--blue)"></div>`;
+    const champ=CHAMPIONS[wc];
+    let champHtml='';
+    if(champ&&champ.img){
+      champHtml=`<img class="wc-champ-img" src="${CHAMP_BASE}${champ.img}" alt="${champ.name}" loading="lazy">`;
+    }
+    let champLabel='';
+    if(champ){
+      champLabel=champ.name==='Vacant'
+        ?`<div class="wc-champ-vacant">Vacant</div>`
+        :`<div class="wc-champ-name">${champ.name}</div>`;
+    }
     return `<div class="wc-card" onclick="openWC('${wc.replace(/'/g,"\\'")}')">
-      <div class="wc-name">${wc}</div>
-      <div class="wc-count">${fighters.length} fighter${fighters.length!==1?'s':''}</div>
-      ${dots?`<div class="wc-flags">${dots}</div>`:''}
+      ${champHtml}
+      <div style="flex:1;min-width:0">
+        <div class="wc-name">${wc}</div>
+        ${champLabel}
+        <div class="wc-count">${fighters.length} fighter${fighters.length!==1?'s':''}</div>
+        ${dots?`<div class="wc-flags">${dots}</div>`:''}
+      </div>
       <div class="wc-arrow">→</div>
     </div>`;
   }).join('');
