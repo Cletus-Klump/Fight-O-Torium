@@ -244,6 +244,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-record{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px}
 .home-record-meta{font-size:13px;color:var(--text2);margin-top:6px}
 .home-placeholder{color:var(--text3);font-size:13px;font-style:italic}
+.champ-section{margin-top:28px}
+.champ-section-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.champ-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 10px 10px;text-align:center;transition:all 0.15s;cursor:pointer;overflow:hidden}
+.champ-card:hover{border-color:var(--accent);background:var(--bg3)}
+.champ-card.vacant{opacity:0.4;cursor:default}
+.champ-card.vacant:hover{border-color:var(--border);background:var(--bg2)}
+.champ-img{width:100px;height:100px;object-fit:cover;object-position:top;border-radius:6px;margin-bottom:8px;background:var(--bg3)}
+.champ-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;line-height:1.2;margin-bottom:3px}
+.champ-div{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+.champ-card.special .champ-div{color:var(--gold,#e8c84a)}
 </style>
 </head>
 <body>
@@ -642,6 +653,40 @@ function renderHome(){
   html+=`<div class="home-card"><div class="home-card-title">Hot Matchup</div><div class="home-placeholder">Coming soon</div></div>`;
 
   html+='</div>';
+
+  // Champions grid
+  const champBase=SUPABASE_URL+'/storage/v1/object/public/champion-images/';
+  const champs=[
+    {div:'Flyweight',name:'Joshua Van',img:'flyweight.png'},
+    {div:'Bantamweight',name:'Petr Yan',img:'bantamweight.png'},
+    {div:'Featherweight',name:'Alexander Volkanovski',img:'featherweight.png'},
+    {div:'Lightweight',name:'Ilia Topuria',img:'lightweight.png'},
+    {div:'Welterweight',name:'Islam Makhachev',img:'welterweight.png'},
+    {div:'Middleweight',name:'Khamzat Chimaev',img:'middleweight.png'},
+    {div:'Light Heavyweight',name:'Vacant',img:null,vacant:true},
+    {div:'Heavyweight',name:'Tom Aspinall',img:'heavyweight.png'},
+    {div:"W Strawweight",name:'Mackenzie Dern',img:'w-strawweight.png'},
+    {div:"W Flyweight",name:'Valentina Shevchenko',img:'w-flyweight.png'},
+    {div:"W Bantamweight",name:'Kayla Harrison',img:'w-bantamweight.png'},
+    {div:'BMF',name:'Max Holloway',img:'bmf.png',special:true},
+    {div:'P4P',name:'Islam Makhachev',img:'pfp.png',special:true},
+  ];
+  html+=`<div class="champ-section">
+    <div class="champ-section-title">Current Champions</div>
+    <div class="champ-grid">
+      ${champs.map(c=>{
+        const cls='champ-card'+(c.vacant?' vacant':'')+(c.special?' special':'');
+        const fighter=c.vacant?null:allFighters.find(f=>fuzzyMatchFighter(f.name,c.name));
+        const onclick=fighter?` onclick="showPage('fighters',document.querySelectorAll('.nav-btn')[1]);showFighterDetail('${fighter.id}')"`:c.vacant?'':'';
+        return `<div class="${cls}"${onclick}>
+          ${c.img?`<img class="champ-img" src="${champBase}${c.img}" alt="${c.name}" loading="lazy">`:`<div class="champ-img" style="display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;margin:0 auto 8px;">—</div>`}
+          <div class="champ-name">${c.name}</div>
+          <div class="champ-div">${c.div}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
   document.getElementById('homeContent').innerHTML=html;
 }
 
