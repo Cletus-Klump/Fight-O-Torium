@@ -601,8 +601,8 @@ async function init(){
   try{
     await Promise.all([loadFighters(),loadCards(),loadPicks()]);
     setConn(true);
-    renderHome();
   }catch(e){setConn(false);toast('Connection error','error');console.error(e)}
+  renderHome();
 }
 
 function setConn(ok){
