@@ -187,11 +187,19 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 /* PICKS */
 .pick-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;transition:border-color 0.15s,opacity 0.15s}
 .pick-card:hover{border-color:var(--border2)}
-.pick-card.dragging{opacity:0.4;border-color:var(--accent)}
-.pick-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.drag-handle{cursor:grab;color:var(--text3);font-size:16px;padding:4px 6px;border-radius:4px;transition:color 0.15s;user-select:none;line-height:1}
-.drag-handle:hover{color:var(--accent)}
-.drag-handle:active{cursor:grabbing}
+.reorder-toolbar{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--accent);border-radius:8px;padding:12px 16px;margin-bottom:12px}
+.reorder-toolbar .reorder-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
+.reorder-row{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:6px;transition:background 0.25s,border-color 0.15s}
+.reorder-row:hover{border-color:var(--border2)}
+.reorder-pos{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);min-width:20px;text-align:center}
+.reorder-fighters{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reorder-wc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.reorder-line{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;min-width:50px;text-align:right;flex-shrink:0}
+.reorder-arrows{display:flex;gap:4px;flex-shrink:0}
+.reorder-arrow{background:var(--bg3);border:1px solid var(--border);border-radius:4px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;transition:all 0.15s;line-height:1}
+.reorder-arrow:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.reorder-arrow:disabled{opacity:0.2;cursor:default}
+.reorder-row.just-moved{background:rgba(232,200,74,0.08);border-color:var(--accent)}
 .pick-tag-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:13px;cursor:pointer;transition:all 0.15s;line-height:1;opacity:0.4}
 .pick-tag-btn:hover{opacity:0.8}
 .pick-tag-btn.active{opacity:1;border-color:var(--accent)}
@@ -508,6 +516,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
           <button class="btn btn-danger btn-sm" onclick="deleteCurrentCard()" style="padding:8px 14px;">🗑</button>
           <button class="btn btn-secondary" onclick="openEditCardModal()" style="padding:8px 16px;">✏ Edit Card</button>
           <button class="btn btn-secondary" onclick="syncCard()" id="syncCardBtn" style="padding:8px 16px;">⟳ Sync Card</button>
+          <button class="btn btn-secondary" onclick="enterReorderMode()" id="reorderBtn" style="padding:8px 16px;">↕ Reorder</button>
           <button class="btn btn-secondary" onclick="openAddMatchupModal()" style="padding:8px 16px;">+ Add Matchup</button>
           <button class="btn btn-secondary" onclick="openParlayModal()" style="padding:8px 16px;">⚡ Parlay Builder</button>
         </div>
@@ -1468,9 +1477,8 @@ function renderPickCard(p) {
     ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'HIT':p.result==='L'?'MISS':'PASS'}</span>`
     : `<span style="color:rgba(232,200,74,0.5);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
 
-  return `<div class="pick-card" data-pick-id="${p.id}" draggable="true" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
+  return `<div class="pick-card" data-pick-id="${p.id}" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
     <div class="pick-card-header">
-      <div class="drag-handle" title="Drag to reorder" onmousedown="event.stopPropagation()">⠿</div>
       <div style="flex:1;">
         ${p.weight_class ? `<div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;text-align:center;">${p.weight_class}</div>` : ''}
         <div class="pick-fighters" style="display:flex;align-items:flex-start;justify-content:center;gap:8px;">
@@ -1525,67 +1533,101 @@ function showCardDetail(cardId){
     document.getElementById('cardDetailPicks').innerHTML='<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">No picks logged for this card</div></div>';
   } else {
     document.getElementById('cardDetailPicks').innerHTML=picks.map(p=>renderPickCard(p)).join('');
-    initPickDragDrop();
   }
   document.getElementById('cardsListView').style.display='none';
   document.getElementById('cardsDetailView').style.display='block';
   navigateTo({page:'cards',card:cardId});
 }
 
-// ---- DRAG-AND-DROP REORDERING ----
-function initPickDragDrop() {
-  const container = document.getElementById('cardDetailPicks');
-  if (!container) return;
-  let dragEl = null;
+// ---- REORDER MODE ----
+let reorderOriginalOrder = null;
 
-  container.querySelectorAll('.pick-card[draggable]').forEach(card => {
-    card.addEventListener('dragstart', e => {
-      dragEl = card;
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', card.dataset.pickId);
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      container.querySelectorAll('.pick-card').forEach(c => c.classList.remove('drag-over'));
-      dragEl = null;
-    });
-    card.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      if (card !== dragEl) card.classList.add('drag-over');
-    });
-    card.addEventListener('dragleave', () => {
-      card.classList.remove('drag-over');
-    });
-    card.addEventListener('drop', e => {
-      e.preventDefault();
-      card.classList.remove('drag-over');
-      if (!dragEl || dragEl === card) return;
-      // Reorder DOM
-      const cards = [...container.querySelectorAll('.pick-card[draggable]')];
-      const fromIdx = cards.indexOf(dragEl);
-      const toIdx = cards.indexOf(card);
-      if (fromIdx < toIdx) card.after(dragEl);
-      else card.before(dragEl);
-      // Batch update sort_order
-      saveDragOrder();
-    });
-  });
+function enterReorderMode() {
+  const picks = allPicks.filter(p => p.card_id === currentCardId);
+  if (picks.length < 2) { toast('Need at least 2 picks to reorder', 'error'); return; }
+  reorderOriginalOrder = picks.map(p => ({ id: p.id, sort_order: p.sort_order }));
+  document.getElementById('reorderBtn').style.display = 'none';
+  const container = document.getElementById('cardDetailPicks');
+  const toolbar = `<div class="reorder-toolbar">
+    <span class="reorder-title">Reorder Picks</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="cancelReorderMode()" style="padding:6px 14px;">Cancel</button>
+      <button class="btn btn-sm" onclick="saveReorderMode()" style="padding:6px 14px;">Done</button>
+    </div>
+  </div>`;
+  container.innerHTML = toolbar + picks.map((p, i) => renderReorderRow(p, i, picks.length)).join('');
 }
 
-async function saveDragOrder() {
+function renderReorderRow(p, i, total) {
+  const fA = fightersById.get(p.fighter_a_id);
+  const fB = fightersById.get(p.fighter_b_id);
+  const nameA = fA ? fA.name : '???';
+  const nameB = fB ? fB.name : '???';
+  const lp = p.line && p.line.startsWith('+'), ln = p.line && p.line.startsWith('-');
+  const lineClass = lp ? 'color:var(--green)' : ln ? 'color:var(--red)' : 'color:var(--text2)';
+  return `<div class="reorder-row" data-pick-id="${p.id}">
+    <span class="reorder-pos">${i + 1}</span>
+    <span class="reorder-fighters">${nameA} vs ${nameB}</span>
+    <span class="reorder-wc">${p.weight_class || ''}</span>
+    <span class="reorder-line" style="${lineClass}">${p.line || '—'}</span>
+    <span class="reorder-arrows">
+      <button class="reorder-arrow" onclick="moveReorderRow(this,-1)" ${i === 0 ? 'disabled' : ''} title="Move up">▲</button>
+      <button class="reorder-arrow" onclick="moveReorderRow(this,1)" ${i === total - 1 ? 'disabled' : ''} title="Move down">▼</button>
+    </span>
+  </div>`;
+}
+
+function moveReorderRow(btn, dir) {
+  const row = btn.closest('.reorder-row');
   const container = document.getElementById('cardDetailPicks');
-  const cards = [...container.querySelectorAll('.pick-card[data-pick-id]')];
-  const updates = cards.map((el, i) => sbPatch('picks', el.dataset.pickId, { sort_order: i + 1 }));
+  const rows = [...container.querySelectorAll('.reorder-row')];
+  const idx = rows.indexOf(row);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= rows.length) return;
+  const swapRow = rows[swapIdx];
+  if (dir === -1) row.parentNode.insertBefore(row, swapRow);
+  else row.parentNode.insertBefore(swapRow, row);
+  // Update position numbers and arrow disabled states
+  const updated = [...container.querySelectorAll('.reorder-row')];
+  updated.forEach((r, i) => {
+    r.querySelector('.reorder-pos').textContent = i + 1;
+    const arrows = r.querySelectorAll('.reorder-arrow');
+    arrows[0].disabled = i === 0;
+    arrows[1].disabled = i === updated.length - 1;
+  });
+  // Brief highlight on moved row
+  row.classList.add('just-moved');
+  setTimeout(() => row.classList.remove('just-moved'), 300);
+}
+
+async function saveReorderMode() {
+  const container = document.getElementById('cardDetailPicks');
+  const rows = [...container.querySelectorAll('.reorder-row')];
+  const updates = rows.map((el, i) => {
+    const pickId = el.dataset.pickId;
+    const p = picksById.get(pickId);
+    if (p) p.sort_order = i + 1;
+    return sbPatch('picks', pickId, { sort_order: i + 1 });
+  });
   try {
     await Promise.all(updates);
-    // Update local allPicks sort_order to match
-    cards.forEach((el, i) => {
-      const p = picksById.get(el.dataset.pickId);
-      if (p) p.sort_order = i + 1;
-    });
+    toast('Order saved', 'success');
   } catch(e) { toast('Error saving order: ' + e.message, 'error'); }
+  reorderOriginalOrder = null;
+  document.getElementById('reorderBtn').style.display = '';
+  showCardDetail(currentCardId);
+}
+
+function cancelReorderMode() {
+  if (reorderOriginalOrder) {
+    reorderOriginalOrder.forEach(o => {
+      const p = picksById.get(o.id);
+      if (p) p.sort_order = o.sort_order;
+    });
+  }
+  reorderOriginalOrder = null;
+  document.getElementById('reorderBtn').style.display = '';
+  showCardDetail(currentCardId);
 }
 
 // ---- HOT MATCHUP TOGGLE ----
