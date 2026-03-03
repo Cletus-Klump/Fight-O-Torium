@@ -318,7 +318,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <input type="text" class="search-input" id="fighterSearch" placeholder="Search fighters..." oninput="onSearchInput()">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
       <button class="btn btn-primary btn-sm" onclick="openAddFighterModal()" style="margin-left:8px;">+ Add Fighter</button>
-      <button class="btn btn-secondary btn-sm" onclick="openBulkDeleteModal()" style="margin-left:6px;color:var(--red);">🗑 Clean Imports</button>
       <span class="fighter-count-pill" id="fighterCountDisplay"></span>
     </div>
     <div class="fighters-body" id="fightersBody">
@@ -533,14 +532,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
         <button class="btn btn-primary" onclick="saveEditAnalysis()">Save Pick</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Bulk Delete Imports Modal -->
-<div class="modal-overlay" id="bulkDeleteModal">
-  <div class="modal" style="max-width:640px;">
-    <div class="modal-header"><div class="modal-title">Clean Imported Fighters</div><button class="modal-close" onclick="closeModal('bulkDeleteModal')">✕</button></div>
-    <div id="bulkDeleteBody"></div>
   </div>
 </div>
 
@@ -2273,57 +2264,6 @@ async function confirmSyncNewFights() {
   if (skipped) parts.push(`${skipped} skipped`);
   toast(parts.join(' · '), 'success');
   window._syncNewFights = [];
-}
-
-function openBulkDeleteModal() {
-  const imported = allFighters.filter(f => f.notes && f.notes.includes('Imported via Odds API'));
-  const body = document.getElementById('bulkDeleteBody');
-  if (!imported.length) {
-    body.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:12px;">No imported fighters found.</div>`;
-    openModal('bulkDeleteModal');
-    return;
-  }
-  body.innerHTML = `
-    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">These fighters were imported via the Odds API. Check the ones you want to delete, then confirm.</div>
-    <div style="display:flex;gap:10px;margin-bottom:12px;">
-      <button class="btn btn-secondary btn-sm" onclick="bulkSelectAll(true)">Select All</button>
-      <button class="btn btn-secondary btn-sm" onclick="bulkSelectAll(false)">Deselect All</button>
-    </div>
-    <div id="bulkDeleteList" style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:16px;">
-      ${imported.map(f => `
-        <label style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          <input type="checkbox" class="bulk-delete-cb" data-id="${f.id}" checked style="width:16px;height:16px;accent-color:var(--red);">
-          <div style="flex:1;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;">${f.name}</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">${f.weight_class||'No weight class'} · ${f.flag_type||'NEUTRAL'}</div>
-          </div>
-        </label>`).join('')}
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn btn-secondary" onclick="closeModal('bulkDeleteModal')">Cancel</button>
-      <button class="btn btn-danger" onclick="confirmBulkDelete()">Delete Selected</button>
-    </div>`;
-  openModal('bulkDeleteModal');
-}
-
-function bulkSelectAll(checked) {
-  document.querySelectorAll('.bulk-delete-cb').forEach(cb => cb.checked = checked);
-}
-
-async function confirmBulkDelete() {
-  const checked = [...document.querySelectorAll('.bulk-delete-cb:checked')];
-  if (!checked.length) { toast('Nothing selected', 'error'); return; }
-  if (!confirm(`Delete ${checked.length} fighter${checked.length !== 1 ? 's' : ''}? This cannot be undone.`)) return;
-  let deleted = 0, failed = 0;
-  for (const cb of checked) {
-    try {
-      await sbDelete('fighters', cb.dataset.id);
-      deleted++;
-    } catch(e) { failed++; }
-  }
-  await loadFighters();
-  closeModal('bulkDeleteModal');
-  toast(`${deleted} fighter${deleted !== 1 ? 's' : ''} deleted${failed ? ` · ${failed} failed` : ''}`, failed ? 'error' : 'success');
 }
 
 init();
