@@ -156,9 +156,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .sidebar-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
 
 /* PICKS */
-.pick-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;transition:border-color 0.15s}
+.pick-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;transition:border-color 0.15s,opacity 0.15s}
 .pick-card:hover{border-color:var(--border2)}
-.pick-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.pick-card.dragging{opacity:0.4;border-color:var(--accent)}
+.pick-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.drag-handle{cursor:grab;color:var(--text3);font-size:16px;padding:4px 6px;border-radius:4px;transition:color 0.15s;user-select:none;line-height:1}
+.drag-handle:hover{color:var(--accent)}
+.drag-handle:active{cursor:grabbing}
+.pick-tag-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:13px;cursor:pointer;transition:all 0.15s;line-height:1;opacity:0.4}
+.pick-tag-btn:hover{opacity:0.8}
+.pick-tag-btn.active{opacity:1;border-color:var(--accent)}
+.pick-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px}
 .pick-fighters{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
 .pick-details{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .failure-mode-box{background:var(--bg3);border-left:2px solid var(--orange);padding:10px 14px;border-radius:0 4px 4px 0;font-size:12px;color:var(--text2);margin-top:10px;font-style:italic}
@@ -309,7 +317,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <nav class="nav">
     <button class="nav-btn active" onclick="showPage('home',this)">Home</button>
     <button class="nav-btn" onclick="showPage('fighters',this)">Fighters</button>
-    <button class="nav-btn" onclick="showPage('cards',this)">Cards</button>
+    <button class="nav-btn" onclick="showPage('cards',this)">Events</button>
   </nav>
   <div class="conn-status"><div class="conn-dot" id="connDot"></div><span id="connLabel">connecting...</span></div>
 </div>
@@ -378,7 +386,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     <div id="cardsDetailView" style="display:none;flex:1;overflow-y:auto;padding:28px 32px;">
       <div class="page-header">
         <div>
-          <button class="btn btn-secondary btn-sm" onclick="showCardsList()" style="margin-bottom:10px;">← All Cards</button>
+          <button class="btn btn-secondary btn-sm" onclick="showCardsList()" style="margin-bottom:10px;">← All Events</button>
           <div class="page-title" id="cardDetailName"></div>
           <div class="page-subtitle" id="cardDetailMeta"></div>
         </div>
@@ -696,11 +704,42 @@ function renderHome(){
     html+=`<div class="home-card"><div class="home-card-title">Last Card</div><div class="home-placeholder">No past cards</div></div>`;
   }
 
-  // Main Event placeholder
-  html+=`<div class="home-card"><div class="home-card-title">Main Event</div><div class="home-placeholder">Coming soon</div></div>`;
+  // Main Event — find tagged pick from upcoming card
+  const meCard = upcoming.length ? upcoming[0] : null;
+  const mePick = meCard ? allPicks.find(p => p.card_id === meCard.id && p.main_event) : null;
+  if (mePick) {
+    const meA = allFighters.find(f => f.id === mePick.fighter_a_id);
+    const meB = allFighters.find(f => f.id === mePick.fighter_b_id);
+    const mePhotoA = meA?.image_url ? `<img src="${meA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
+    const mePhotoB = meB?.image_url ? `<img src="${meB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
+    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${meCard.id}')">
+      <div class="home-card-title">⭐ Main Event</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${mePhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meA?.name||'?'}</span></div>
+      <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
+      <div style="display:flex;align-items:center;gap:10px;">${mePhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meB?.name||'?'}</span></div>
+      ${mePick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${mePick.weight_class}${mePick.line?' · '+mePick.line:''}</div>` : ''}
+    </div>`;
+  } else {
+    html+=`<div class="home-card"><div class="home-card-title">⭐ Main Event</div><div class="home-placeholder">Tag a fight as Main Event</div></div>`;
+  }
 
-  // Hot Matchup placeholder
-  html+=`<div class="home-card"><div class="home-card-title">Hot Matchup</div><div class="home-placeholder">Coming soon</div></div>`;
+  // Hot Matchup — find tagged pick from upcoming card
+  const hmPick = meCard ? allPicks.find(p => p.card_id === meCard.id && p.hot_matchup) : null;
+  if (hmPick) {
+    const hmA = allFighters.find(f => f.id === hmPick.fighter_a_id);
+    const hmB = allFighters.find(f => f.id === hmPick.fighter_b_id);
+    const hmPhotoA = hmA?.image_url ? `<img src="${hmA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
+    const hmPhotoB = hmB?.image_url ? `<img src="${hmB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
+    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${meCard.id}')">
+      <div class="home-card-title">🔥 Hot Matchup</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${hmPhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmA?.name||'?'}</span></div>
+      <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
+      <div style="display:flex;align-items:center;gap:10px;">${hmPhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmB?.name||'?'}</span></div>
+      ${hmPick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${hmPick.weight_class}${hmPick.line?' · '+hmPick.line:''}</div>` : ''}
+    </div>`;
+  } else {
+    html+=`<div class="home-card"><div class="home-card-title">🔥 Hot Matchup</div><div class="home-placeholder">Tag a fight as Hot Matchup</div></div>`;
+  }
 
   html+='</div>';
 
@@ -1047,7 +1086,7 @@ async function loadCards(){
 
 function renderCards(){
   const list=document.getElementById('cardsList');
-  if(!allCards.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No cards logged yet</div></div>';return}
+  if(!allCards.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No events logged yet</div></div>';return}
   list.innerHTML=allCards.map(card=>{
     const cp=allPicks.filter(p=>p.card_id===card.id);
     const w=cp.filter(p=>p.result==='W').length,l=cp.filter(p=>p.result==='L').length,pass=cp.filter(p=>p.result==='P').length;
@@ -1082,8 +1121,9 @@ function renderPickCard(p) {
     ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'HIT':p.result==='L'?'MISS':'PASS'}</span>`
     : `<span style="color:rgba(232,200,74,0.5);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
 
-  return `<div class="pick-card" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
+  return `<div class="pick-card" data-pick-id="${p.id}" draggable="true" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
     <div class="pick-card-header">
+      <div class="drag-handle" title="Drag to reorder" onmousedown="event.stopPropagation()">⠿</div>
       <div style="flex:1;">
         ${p.weight_class ? `<div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;text-align:center;">${p.weight_class}</div>` : ''}
         <div class="pick-fighters" style="display:flex;align-items:flex-start;justify-content:center;gap:8px;">
@@ -1093,6 +1133,8 @@ function renderPickCard(p) {
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <button class="pick-tag-btn${p.main_event?' active':''}" onclick="event.stopPropagation();toggleMainEvent('${p.id}')" title="Main Event">⭐</button>
+        <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup">🔥</button>
         ${resultBadge}
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
         <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
@@ -1137,9 +1179,96 @@ function showCardDetail(cardId){
     document.getElementById('cardDetailPicks').innerHTML='<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">No picks logged for this card</div></div>';
   } else {
     document.getElementById('cardDetailPicks').innerHTML=picks.map(p=>renderPickCard(p)).join('');
+    initPickDragDrop();
   }
   document.getElementById('cardsListView').style.display='none';
   document.getElementById('cardsDetailView').style.display='block';
+}
+
+// ---- DRAG-AND-DROP REORDERING ----
+function initPickDragDrop() {
+  const container = document.getElementById('cardDetailPicks');
+  if (!container) return;
+  let dragEl = null;
+
+  container.querySelectorAll('.pick-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragEl = card;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.pickId);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      container.querySelectorAll('.pick-card').forEach(c => c.classList.remove('drag-over'));
+      dragEl = null;
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (card !== dragEl) card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => {
+      card.classList.remove('drag-over');
+    });
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      if (!dragEl || dragEl === card) return;
+      // Reorder DOM
+      const cards = [...container.querySelectorAll('.pick-card[draggable]')];
+      const fromIdx = cards.indexOf(dragEl);
+      const toIdx = cards.indexOf(card);
+      if (fromIdx < toIdx) card.after(dragEl);
+      else card.before(dragEl);
+      // Batch update sort_order
+      saveDragOrder();
+    });
+  });
+}
+
+async function saveDragOrder() {
+  const container = document.getElementById('cardDetailPicks');
+  const cards = [...container.querySelectorAll('.pick-card[data-pick-id]')];
+  const updates = cards.map((el, i) => sbPatch('picks', el.dataset.pickId, { sort_order: i + 1 }));
+  try {
+    await Promise.all(updates);
+    // Update local allPicks sort_order to match
+    cards.forEach((el, i) => {
+      const p = allPicks.find(x => x.id === el.dataset.pickId);
+      if (p) p.sort_order = i + 1;
+    });
+  } catch(e) { toast('Error saving order: ' + e.message, 'error'); }
+}
+
+// ---- MAIN EVENT / HOT MATCHUP TOGGLES ----
+async function toggleMainEvent(pickId) {
+  const pick = allPicks.find(p => p.id === pickId);
+  if (!pick) return;
+  const newVal = !pick.main_event;
+  try {
+    // If turning on, clear any other main_event on this card
+    if (newVal) {
+      const others = allPicks.filter(p => p.card_id === pick.card_id && p.main_event && p.id !== pickId);
+      for (const o of others) {
+        await sbPatch('picks', o.id, { main_event: false });
+        o.main_event = false;
+      }
+    }
+    await sbPatch('picks', pickId, { main_event: newVal });
+    pick.main_event = newVal;
+    showCardDetail(currentCardId);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function toggleHotMatchup(pickId) {
+  const pick = allPicks.find(p => p.id === pickId);
+  if (!pick) return;
+  try {
+    await sbPatch('picks', pickId, { hot_matchup: !pick.hot_matchup });
+    pick.hot_matchup = !pick.hot_matchup;
+    showCardDetail(currentCardId);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
 function openEditCardModal(){
@@ -1208,7 +1337,7 @@ async function saveCard(){
 
 // ---- PICKS ----
 async function loadPicks(){
-  allPicks=await sbGet('picks','order=created_at.desc');
+  allPicks=await sbGet('picks','order=sort_order.asc.nullsfirst,created_at.desc');
 }
 
 function updatePickOptions(){
@@ -2171,6 +2300,10 @@ async function saveAddMatchup() {
     if (odds) lineA = odds.lineA;
   }
 
+  // Assign sort_order as max+1 for this card
+  const cardPicks = allPicks.filter(p => p.card_id === currentCardId);
+  const maxOrder = cardPicks.reduce((max, p) => Math.max(max, p.sort_order || 0), 0);
+
   try {
     await sbPost('picks', {
       card_id: currentCardId,
@@ -2181,6 +2314,7 @@ async function saveAddMatchup() {
       confidence: 'Lean',
       parlay_candidate: false,
       result: null,
+      sort_order: maxOrder + 1,
       notes: document.getElementById('am_notes').value || null
     });
     toast('Matchup added ✓', 'success');
@@ -2427,6 +2561,14 @@ async function confirmSyncNewFights() {
   const fights = window._syncNewFights || [];
   let added = 0, skipped = 0, created = 0;
 
+  // Sort by commence_time descending (main event first — latest time = headliner)
+  fights.sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time));
+
+  // Compute starting sort_order from existing picks on this card
+  const existingCardPicks = allPicks.filter(p => p.card_id === currentCardId);
+  const maxExisting = existingCardPicks.reduce((max, p) => Math.max(max, p.sort_order || 0), 0);
+  let nextOrder = maxExisting + 1;
+
   for (let i = 0; i < fights.length; i++) {
     const cb = document.getElementById(`syncCb_${i}`);
     if (!cb?.checked) { skipped++; continue; }
@@ -2482,6 +2624,7 @@ async function confirmSyncNewFights() {
         confidence: 'Lean',
         parlay_candidate: false,
         result: null,
+        sort_order: nextOrder++,
         notes: `Lines: ${getLine(fight.home_team)||'?'} / ${getLine(fight.away_team)||'?'} · Pending analysis`
       });
       added++;
