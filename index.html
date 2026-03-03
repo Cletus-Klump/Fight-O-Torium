@@ -1133,7 +1133,6 @@ function renderPickCard(p) {
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <button class="pick-tag-btn${p.main_event?' active':''}" onclick="event.stopPropagation();toggleMainEvent('${p.id}')" title="Main Event">⭐</button>
         <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup">🔥</button>
         ${resultBadge}
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
