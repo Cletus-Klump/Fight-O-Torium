@@ -713,14 +713,14 @@ function renderHome(){
     const mePhotoA = meA?.image_url ? `<img src="${meA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     const mePhotoB = meB?.image_url ? `<img src="${meB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${mePick.id}')">
-      <div class="home-card-title">⭐ Main Event</div>
+      <div class="home-card-title">Main Event</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${mePhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meA?.name||'?'}</span></div>
       <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
       <div style="display:flex;align-items:center;gap:10px;">${mePhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meB?.name||'?'}</span></div>
       ${mePick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${mePick.weight_class}${mePick.line?' · '+mePick.line:''}</div>` : ''}
     </div>`;
   } else {
-    html+=`<div class="home-card"><div class="home-card-title">⭐ Main Event</div><div class="home-placeholder">Tag a fight as Main Event</div></div>`;
+    html+=`<div class="home-card"><div class="home-card-title">Main Event</div><div class="home-placeholder">Tag a fight as Main Event</div></div>`;
   }
 
   // Hot Matchup — find tagged pick from upcoming card
@@ -731,14 +731,14 @@ function renderHome(){
     const hmPhotoA = hmA?.image_url ? `<img src="${hmA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     const hmPhotoB = hmB?.image_url ? `<img src="${hmB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${hmPick.id}')">
-      <div class="home-card-title">🔥 Hot Matchup</div>
+      <div class="home-card-title">Hot Matchup</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${hmPhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmA?.name||'?'}</span></div>
       <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
       <div style="display:flex;align-items:center;gap:10px;">${hmPhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmB?.name||'?'}</span></div>
       ${hmPick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${hmPick.weight_class}${hmPick.line?' · '+hmPick.line:''}</div>` : ''}
     </div>`;
   } else {
-    html+=`<div class="home-card"><div class="home-card-title">🔥 Hot Matchup</div><div class="home-placeholder">Tag a fight as Hot Matchup</div></div>`;
+    html+=`<div class="home-card"><div class="home-card-title">Hot Matchup</div><div class="home-placeholder">Tag a fight as Hot Matchup</div></div>`;
   }
 
   html+='</div>';
@@ -2606,9 +2606,11 @@ async function confirmSyncNewFights() {
         confidence: 'Lean',
         parlay_candidate: false,
         result: null,
-        sort_order: nextOrder++,
+        sort_order: nextOrder,
+        main_event: nextOrder === maxExisting + 1,
         notes: `Lines: ${getLine(fight.home_team)||'?'} / ${getLine(fight.away_team)||'?'} · Pending analysis`
       });
+      nextOrder++;
       added++;
     } catch(e) { skipped++; }
   }
