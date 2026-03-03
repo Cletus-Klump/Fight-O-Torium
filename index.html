@@ -274,7 +274,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup-name:hover{color:var(--accent)}
 .home-matchup-vs{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:2px;flex-shrink:0}
 .home-matchup-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:12px;letter-spacing:1px;text-align:center}
-.home-matchup-clickzone{position:absolute;inset:0;cursor:pointer;z-index:0}
 
 /* Size variants */
 .home-matchup--large{padding:32px 40px}
@@ -769,29 +768,28 @@ function renderHome(){
     const fA=fightersById.get(pick.fighter_a_id), fB=fightersById.get(pick.fighter_b_id);
     const navToFighterA=fA?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_a_id}')`:'';
     const navToFighterB=fB?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_b_id}')`:'';
-    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" onclick="event.stopPropagation();${navToFighterA}" alt="${fA?.name||''}" style="position:relative;z-index:2">` : `<div class="home-matchup-photo" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
-    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" onclick="event.stopPropagation();${navToFighterB}" alt="${fB?.name||''}" style="position:relative;z-index:2">` : `<div class="home-matchup-photo" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" onclick="event.stopPropagation();${navToFighterA}" alt="${fA?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" onclick="event.stopPropagation();${navToFighterB}" alt="${fB?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
 
     const isHot=ft.variant==='hot-nontitle'||ft.variant==='hot-title';
     const labelIcon=ft.belt ? ft.belt+' ' : (isHot ? flameIcon+' ' : '');
     const corners=ft.variant==='title-division' ? `<div class="hm-corner hm-corner--tl"></div><div class="hm-corner hm-corner--tr"></div><div class="hm-corner hm-corner--bl"></div><div class="hm-corner hm-corner--br"></div>` : '';
 
-    return `<div class="home-matchup home-matchup--${ft.size} home-matchup--${ft.variant}">
-      <div class="home-matchup-clickzone" onclick="openMatchupDetail('${pick.id}')"></div>
+    return `<div class="home-matchup home-matchup--${ft.size} home-matchup--${ft.variant}" onclick="openMatchupDetail('${pick.id}')" style="cursor:pointer">
       ${corners}
-      <div class="home-matchup-label" style="position:relative;z-index:1">${labelIcon}<span class="hm-label-text">${label}</span></div>
-      <div class="home-matchup-fighters" style="position:relative;z-index:1">
+      <div class="home-matchup-label">${labelIcon}<span class="hm-label-text">${label}</span></div>
+      <div class="home-matchup-fighters">
         <div class="home-matchup-fighter">
           ${photoA}
-          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterA}" style="position:relative;z-index:2">${fA?.name||'TBD'}</div>
+          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterA}">${fA?.name||'TBD'}</div>
         </div>
         <div class="home-matchup-vs">VS</div>
         <div class="home-matchup-fighter">
           ${photoB}
-          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterB}" style="position:relative;z-index:2">${fB?.name||'TBD'}</div>
+          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterB}">${fB?.name||'TBD'}</div>
         </div>
       </div>
-      ${pick.weight_class ? `<div class="home-matchup-meta" style="position:relative;z-index:1">${pick.weight_class}${pick.line?' &middot; '+pick.line:''}</div>` : ''}
+      ${pick.weight_class ? `<div class="home-matchup-meta">${pick.weight_class}${pick.line?' &middot; '+pick.line:''}</div>` : ''}
     </div>`;
   }
 
