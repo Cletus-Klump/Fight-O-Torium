@@ -172,6 +172,39 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .fighter-link:hover{border-bottom-color:var(--accent);}
 .matchup-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 
+/* TALE OF THE TAPE */
+.tape-header{text-align:center;margin-bottom:24px}
+.tape-header-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;line-height:1}
+.tape-header-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:1px;margin-top:6px}
+.tape-fighters{display:flex;align-items:center;justify-content:center;gap:32px;margin-bottom:28px;padding:20px 0}
+.tape-fighter-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:200px}
+.tape-photo{width:120px;height:120px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.tape-photo img{width:100%;height:100%;object-fit:cover}
+.tape-silhouette{color:var(--text3);opacity:0.3}
+.tape-nickname{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);letter-spacing:2px;text-align:center;min-height:20px}
+.tape-camp{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-align:center}
+.tape-fighter-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;cursor:pointer;transition:color 0.15s;text-align:center}
+.tape-fighter-name:hover{color:var(--accent)}
+.tape-vs{font-family:'Titan One',cursive;font-size:28px;color:var(--accent);text-shadow:0 0 20px rgba(232,200,74,0.4);flex-shrink:0}
+.tape-section-title{display:flex;align-items:center;gap:12px;margin:24px 0 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
+.tape-section-title::before,.tape-section-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+.tape-stat-row{display:grid;grid-template-columns:80px 1fr 80px 90px;align-items:center;gap:8px;margin-bottom:8px}
+.tape-stat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+.tape-stat-left{text-align:right}
+.tape-stat-right{text-align:left}
+.tape-stat-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);text-align:right}
+.tape-bar{height:20px;background:var(--bg3);border-radius:3px;display:flex;overflow:hidden;position:relative}
+.tape-bar::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border2)}
+.tape-bar-left{background:rgba(232,74,74,0.3);transition:width 0.4s ease}
+.tape-bar-right{background:rgba(74,138,232,0.3);transition:width 0.4s ease}
+.tape-flags{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:8px}
+.tape-flag-col{display:flex;flex-direction:column;gap:8px}
+.tape-flag-col .flag-detail-text{font-size:12px;color:var(--text2);line-height:1.5}
+.tape-breakdown{background:#1a1a1a;border-left:3px solid var(--accent);padding:20px 24px;border-radius:0 6px 6px 0;font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;line-height:1.6;color:var(--text2);white-space:pre-wrap}
+.tape-notes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tape-notes .card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:16px}
+.tape-notes .card-title{margin-bottom:10px}
+
 /* UTILS */
 .loading{display:flex;align-items:center;gap:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:12px;padding:20px}
 .spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
@@ -293,6 +326,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <input type="text" class="search-input" id="fighterSearch" placeholder="Search fighters..." oninput="onSearchInput()">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
       <button class="btn btn-primary btn-sm" onclick="openAddFighterModal()" style="margin-left:8px;">+ Add Fighter</button>
+      <button class="btn btn-secondary btn-sm" onclick="syncPhotos()" style="margin-left:4px;">📷 Sync Photos</button>
       <span class="fighter-count-pill" id="fighterCountDisplay"></span>
     </div>
     <div class="fighters-body" id="fightersBody">
@@ -379,6 +413,14 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <div class="form-grid form-grid-2">
         <div class="form-field"><label class="form-label">Reach</label><input type="text" class="form-input" id="f_reach" placeholder='e.g. 72"'></div>
         <div class="form-field"><label class="form-label">Flag Type</label><select class="form-select" id="f_flag_type"><option value="NEUTRAL">Neutral</option><option value="ASCENDING">Ascending</option><option value="DESCENDING">Descending</option><option value="FADING">Fading</option><option value="MONITOR">Monitor</option><option value="STANDOUT">Standout</option><option value="AVOID">Avoid</option></select></div>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-field"><label class="form-label">Nickname</label><input type="text" class="form-input" id="f_nickname" placeholder='e.g. "Blessed"'></div>
+        <div class="form-field"><label class="form-label">Height</label><input type="text" class="form-input" id="f_height" placeholder="e.g. 5'11&quot;"></div>
+      </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-field"><label class="form-label">Record</label><input type="text" class="form-input" id="f_record" placeholder="e.g. 26-7"></div>
+        <div class="form-field"><label class="form-label">Image URL</label><input type="text" class="form-input" id="f_image_url" placeholder="Paste image URL"></div>
       </div>
       <div class="form-field"><label class="form-label">Flag Detail</label><textarea class="form-textarea" id="f_flag_detail" placeholder="What you saw, why it matters, what to watch for..."></textarea></div>
       <div class="form-field"><label class="form-label">Notes</label><textarea class="form-textarea" id="f_notes" placeholder="General notes, style, tendencies..."></textarea></div>
@@ -828,16 +870,22 @@ async function selectFighter(id){
   const panel=document.getElementById('fighterDetailPanel');
   panel.innerHTML=`
     <div class="fighter-detail-header">
-      <div>
-        <div class="fighter-name-display">${f.name}</div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          ${f.flag_type?`<span class="flag-badge flag-${f.flag_type}" style="font-size:11px;padding:3px 8px;">${f.flag_type}</span>`:''}
-          ${f.weight_class?`<span style="color:var(--text2);font-size:14px;">${f.weight_class}</span>`:''}
-        </div>
-        <div class="fighter-meta-row">
-          ${f.camp?`<div class="meta-item"><div class="meta-label">Camp</div><div class="meta-value">${f.camp}</div></div>`:''}
-          ${f.age?`<div class="meta-item"><div class="meta-label">Age</div><div class="meta-value">${f.age}</div></div>`:''}
-          ${f.reach?`<div class="meta-item"><div class="meta-label">Reach</div><div class="meta-value">${f.reach}</div></div>`:''}
+      <div style="display:flex;gap:20px;align-items:flex-start;">
+        ${f.image_url?`<img src="${f.image_url}" alt="${f.name}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--border2);flex-shrink:0;">`:''}
+        <div>
+          <div class="fighter-name-display">${f.name}</div>
+          ${f.nickname?`<div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);letter-spacing:2px;margin-bottom:4px;">"${f.nickname}"</div>`:''}
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            ${f.flag_type?`<span class="flag-badge flag-${f.flag_type}" style="font-size:11px;padding:3px 8px;">${f.flag_type}</span>`:''}
+            ${f.weight_class?`<span style="color:var(--text2);font-size:14px;">${f.weight_class}</span>`:''}
+          </div>
+          <div class="fighter-meta-row">
+            ${f.camp?`<div class="meta-item"><div class="meta-label">Camp</div><div class="meta-value">${f.camp}</div></div>`:''}
+            ${f.age?`<div class="meta-item"><div class="meta-label">Age</div><div class="meta-value">${f.age}</div></div>`:''}
+            ${f.height?`<div class="meta-item"><div class="meta-label">Height</div><div class="meta-value">${f.height}</div></div>`:''}
+            ${f.reach?`<div class="meta-item"><div class="meta-label">Reach</div><div class="meta-value">${f.reach}</div></div>`:''}
+            ${f.record?`<div class="meta-item"><div class="meta-label">Record</div><div class="meta-value">${f.record}</div></div>`:''}
+          </div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
@@ -891,7 +939,7 @@ function goToFighter(id){
 function openAddFighterModal(){
   editingFighterId=null;
   document.getElementById('fighterModalTitle').textContent='Add Fighter';
-  ['f_name','f_camp','f_age','f_reach','f_flag_detail','f_notes','f_id'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  ['f_name','f_camp','f_age','f_reach','f_nickname','f_height','f_record','f_image_url','f_flag_detail','f_notes','f_id'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('f_weight_class').value='';
   document.getElementById('f_flag_type').value='NEUTRAL';
   openModal('fighterModal');
@@ -907,6 +955,10 @@ function openEditFighterModal(id){
   document.getElementById('f_camp').value=f.camp||'';
   document.getElementById('f_age').value=f.age||'';
   document.getElementById('f_reach').value=f.reach||'';
+  document.getElementById('f_nickname').value=f.nickname||'';
+  document.getElementById('f_height').value=f.height||'';
+  document.getElementById('f_record').value=f.record||'';
+  document.getElementById('f_image_url').value=f.image_url||'';
   document.getElementById('f_flag_type').value=f.flag_type||'NEUTRAL';
   document.getElementById('f_flag_detail').value=f.flag_detail||'';
   document.getElementById('f_notes').value=f.notes||'';
@@ -916,7 +968,7 @@ function openEditFighterModal(id){
 async function saveFighter(){
   const name=document.getElementById('f_name').value.trim();
   if(!name){toast('Name is required','error');return}
-  const data={name,weight_class:document.getElementById('f_weight_class').value||null,camp:document.getElementById('f_camp').value||null,age:document.getElementById('f_age').value?parseInt(document.getElementById('f_age').value):null,reach:document.getElementById('f_reach').value||null,flag_type:document.getElementById('f_flag_type').value||'NEUTRAL',flag_detail:document.getElementById('f_flag_detail').value||null,notes:document.getElementById('f_notes').value||null,updated_at:new Date().toISOString()};
+  const data={name,weight_class:document.getElementById('f_weight_class').value||null,camp:document.getElementById('f_camp').value||null,age:document.getElementById('f_age').value?parseInt(document.getElementById('f_age').value):null,reach:document.getElementById('f_reach').value||null,nickname:document.getElementById('f_nickname').value||null,height:document.getElementById('f_height').value||null,record:document.getElementById('f_record').value||null,image_url:document.getElementById('f_image_url').value||null,flag_type:document.getElementById('f_flag_type').value||'NEUTRAL',flag_detail:document.getElementById('f_flag_detail').value||null,notes:document.getElementById('f_notes').value||null,updated_at:new Date().toISOString()};
   try{
     if(editingFighterId){
       await sbPatch('fighters',editingFighterId,data);
@@ -1123,32 +1175,120 @@ function updatePickOptions(){
   if(fB)sel.innerHTML+=`<option value="${fB.id}">${fB.name}</option>`;
 }
 
-// ---- MATCHUP DETAIL ----
+// ---- MATCHUP DETAIL (Tale of the Tape) ----
+function tapeBar(leftVal, rightVal, leftNum, rightNum, label) {
+  const total = (leftNum||0) + (rightNum||0);
+  const lPct = total > 0 ? Math.round((leftNum/total)*100) : 50;
+  const rPct = 100 - lPct;
+  return `<div class="tape-stat-row">
+    <div class="tape-stat-val tape-stat-left">${leftVal}</div>
+    <div class="tape-bar">
+      <div class="tape-bar-left" style="width:${lPct}%"></div>
+      <div class="tape-bar-right" style="width:${rPct}%"></div>
+    </div>
+    <div class="tape-stat-val tape-stat-right">${rightVal}</div>
+    <div class="tape-stat-label">${label}</div>
+  </div>`;
+}
+
+function parseHeight(h) {
+  if (!h) return null;
+  const m = h.match(/(\d+)'(\d+)/);
+  return m ? parseInt(m[1]) * 12 + parseInt(m[2]) : null;
+}
+
+function parseReach(r) {
+  if (!r) return null;
+  const m = String(r).match(/(\d+)/);
+  return m ? parseInt(m[1]) : null;
+}
+
+function parseWins(rec) {
+  if (!rec) return null;
+  const m = rec.match(/(\d+)-(\d+)/);
+  return m ? parseInt(m[1]) : null;
+}
+
 function openMatchupDetail(pickId){
   const p=allPicks.find(x=>x.id===pickId);
   if(!p)return;
   const a=allFighters.find(f=>f.id===p.fighter_a_id);
   const b=allFighters.find(f=>f.id===p.fighter_b_id);
   if(!a||!b)return;
+  const card=allCards.find(c=>c.id===p.card_id);
   const aP=allPicks.filter(x=>x.picked_fighter_id===a.id&&x.result);
   const bP=allPicks.filter(x=>x.picked_fighter_id===b.id&&x.result);
   const rec=picks=>{const w=picks.filter(x=>x.result==='W').length,l=picks.filter(x=>x.result==='L').length;return picks.length?`${w}W / ${l}L`:'—'};
-  const col=(f,picks)=>`<div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:3px;margin-bottom:8px;cursor:pointer;" onclick="closeModal('matchupDetailModal');goToFighter('${f.id}')">${f.name}</div>
-    ${f.flag_type?`<div style="margin-bottom:12px;"><span class="flag-badge flag-${f.flag_type}" style="font-size:11px;padding:4px 10px;">${f.flag_type}</span></div>`:''}
-    <table class="history-table" style="margin-bottom:16px;">
-      <tr><td style="color:var(--text2);">Weight Class</td><td style="font-weight:600;">${f.weight_class||'—'}</td></tr>
-      <tr><td style="color:var(--text2);">Camp</td><td style="font-weight:600;">${f.camp||'—'}</td></tr>
-      <tr><td style="color:var(--text2);">Age</td><td style="font-weight:600;">${f.age||'—'}</td></tr>
-      <tr><td style="color:var(--text2);">Reach</td><td style="font-weight:600;">${f.reach||'—'}</td></tr>
-      <tr><td style="color:var(--text2);">Pick Record</td><td style="font-weight:600;">${rec(picks)}</td></tr>
-    </table>
-    ${f.flag_detail?`<div class="card" style="margin-bottom:12px;"><div class="card-title">Flag Detail</div><div class="flag-detail-text">${f.flag_detail}</div></div>`:''}
-    ${f.notes?`<div class="card"><div class="card-title">Notes</div><div class="flag-detail-text">${f.notes}</div></div>`:''}
-  </div>`;
-  const summaryHtml=p.fight_summary?`<div class="card" style="margin-bottom:20px;"><div class="card-title">Fight Summary</div><div class="flag-detail-text" style="white-space:pre-wrap;">${p.fight_summary}</div></div>`:'';
-  document.getElementById('matchupDetailTitle').textContent=(a.name||'—')+' vs '+(b.name||'—');
-  document.getElementById('matchupDetailBody').innerHTML=`${summaryHtml}<div class="matchup-grid">${col(a,aP)}${col(b,bP)}</div>`;
+
+  const silhouetteSvg=`<svg class="tape-silhouette" width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="20" r="12" stroke="currentColor" stroke-width="1.5"/><path d="M10 55 C10 38 50 38 50 55" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`;
+  const photoHtml=(f)=>f.image_url?`<div class="tape-photo"><img src="${f.image_url}" alt="${f.name}"></div>`:`<div class="tape-photo">${silhouetteSvg}</div>`;
+
+  // Parse stat values
+  const aAge=a.age||null, bAge=b.age||null;
+  const aReach=parseReach(a.reach), bReach=parseReach(b.reach);
+  const aHeight=parseHeight(a.height), bHeight=parseHeight(b.height);
+  const aWins=parseWins(a.record), bWins=parseWins(b.record);
+
+  // Card subtitle
+  const cardSub=card?`${card.name} · ${card.date}${card.venue?' · '+card.venue:''}`:'';
+
+  let html=`
+    <div class="tape-header">
+      <div class="tape-header-title">${a.name} vs ${b.name}</div>
+      ${cardSub?`<div class="tape-header-sub">${cardSub}</div>`:''}
+    </div>
+
+    <div class="tape-fighters">
+      <div class="tape-fighter-col">
+        ${photoHtml(a)}
+        <div class="tape-fighter-name" onclick="closeModal('matchupDetailModal');goToFighter('${a.id}')">${a.name}</div>
+        <div class="tape-nickname">${a.nickname?'"'+a.nickname+'"':''}</div>
+        <div class="tape-camp">${a.camp||''}</div>
+      </div>
+      <div class="tape-vs">VS.</div>
+      <div class="tape-fighter-col">
+        ${photoHtml(b)}
+        <div class="tape-fighter-name" onclick="closeModal('matchupDetailModal');goToFighter('${b.id}')">${b.name}</div>
+        <div class="tape-nickname">${b.nickname?'"'+b.nickname+'"':''}</div>
+        <div class="tape-camp">${b.camp||''}</div>
+      </div>
+    </div>
+
+    <div class="tape-section-title">Tale of the Tape</div>
+    ${tapeBar(a.age||'—', b.age||'—', aAge, bAge, 'AGE')}
+    ${tapeBar(a.height||'—', b.height||'—', aHeight, bHeight, 'HEIGHT')}
+    ${tapeBar(a.reach||'—', b.reach||'—', aReach, bReach, 'REACH')}
+    ${tapeBar(a.record||'—', b.record||'—', aWins, bWins, 'RECORD')}
+
+    <div class="tape-section-title">Your Flags</div>
+    <div class="tape-flags">
+      <div class="tape-flag-col">
+        <div>${a.flag_type?`<span class="flag-badge flag-${a.flag_type}" style="font-size:11px;padding:4px 10px;">${a.flag_type}</span>`:''}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">Pick Record: ${rec(aP)}</div>
+        ${a.flag_detail?`<div class="flag-detail-text">${a.flag_detail}</div>`:''}
+      </div>
+      <div class="tape-flag-col">
+        <div>${b.flag_type?`<span class="flag-badge flag-${b.flag_type}" style="font-size:11px;padding:4px 10px;">${b.flag_type}</span>`:''}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">Pick Record: ${rec(bP)}</div>
+        ${b.flag_detail?`<div class="flag-detail-text">${b.flag_detail}</div>`:''}
+      </div>
+    </div>`;
+
+  if(p.fight_summary){
+    html+=`<div class="tape-section-title">The Breakdown</div>
+    <div class="tape-breakdown">${p.fight_summary}</div>`;
+  }
+
+  if(a.notes||b.notes){
+    html+=`<div class="tape-section-title">Notes</div>
+    <div class="tape-notes">
+      <div class="card"><div class="card-title">${a.name}</div><div class="flag-detail-text">${a.notes||'<span style="color:var(--text3);">No notes</span>'}</div></div>
+      <div class="card"><div class="card-title">${b.name}</div><div class="flag-detail-text">${b.notes||'<span style="color:var(--text3);">No notes</span>'}</div></div>
+    </div>`;
+  }
+
+  document.getElementById('matchupDetailTitle').textContent='Matchup Detail';
+  document.getElementById('matchupDetailBody').innerHTML=html;
   openModal('matchupDetailModal');
 }
 
@@ -2291,6 +2431,66 @@ async function confirmSyncNewFights() {
   if (skipped) parts.push(`${skipped} skipped`);
   toast(parts.join(' · '), 'success');
   window._syncNewFights = [];
+}
+
+function fighterToSlug(name){
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+async function syncPhotos(){
+  const missing=allFighters.filter(f=>!f.image_url);
+  if(!missing.length){toast('All fighters already have photos','success');return}
+
+  // Set up progress modal using syncCardModal
+  const titleEl=document.querySelector('#syncCardModal .modal-title');
+  const prevTitle=titleEl.textContent;
+  titleEl.textContent='Sync Photos';
+  document.getElementById('syncCardBody').innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+      <div style="color:var(--accent);margin-bottom:12px;">Syncing photos from UFC.com...</div>
+      <div id="syncPhotoProgress" style="color:var(--text2);margin-bottom:6px;">0 / ${missing.length} fighters checked</div>
+      <div id="syncPhotoTally" style="color:var(--text2);margin-bottom:6px;">0 photos found · 0 not on UFC.com</div>
+      <div id="syncPhotoCurrent" style="color:var(--text3);"></div>
+    </div>`;
+  openModal('syncCardModal');
+
+  let found=0, notFound=0;
+  for(let i=0;i<missing.length;i++){
+    const f=missing[i];
+    document.getElementById('syncPhotoProgress').textContent=`${i+1} / ${missing.length} fighters checked`;
+    document.getElementById('syncPhotoCurrent').textContent=f.name;
+
+    try{
+      const slug=fighterToSlug(f.name);
+      const resp=await fetch(`https://api.codetabs.com/v1/proxy?quest=https://www.ufc.com/athlete/${slug}`);
+      if(resp.ok){
+        const html=await resp.text();
+        const match=html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+        if(match&&match[1]){
+          await sbPatch('fighters',f.id,{image_url:match[1]});
+          f.image_url=match[1];
+          found++;
+        }else{notFound++}
+      }else{notFound++}
+    }catch(e){notFound++}
+
+    document.getElementById('syncPhotoTally').textContent=`${found} photos found · ${notFound} not on UFC.com`;
+    if(i<missing.length-1) await new Promise(r=>setTimeout(r,500));
+  }
+
+  // Done state
+  document.getElementById('syncCardBody').innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+      <div style="color:var(--green);margin-bottom:12px;">✓ Sync complete</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${missing.length} fighters checked</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${found} photos found</div>
+      <div style="color:var(--text2);margin-bottom:16px;">${notFound} not on UFC.com</div>
+      <button class="btn btn-secondary" onclick="closeModal('syncCardModal')">Close</button>
+    </div>`;
+  titleEl.textContent=prevTitle;
+
+  await loadFighters();
+  if(found) toast(`${found} fighter photo${found!==1?'s':''} synced from UFC.com`,'success');
 }
 
 init();
