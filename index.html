@@ -979,7 +979,7 @@ async function selectFighter(id){
             const isPicked=p.picked_fighter_id===id;
             const resultLabel=p.result?(isPicked?(p.result==='W'?'HIT':'MISS'):(p.result==='W'?'MISS':'HIT')):'';
             return `<tr>
-            <td>${card?`<span class="fighter-link" onclick="showCardDetail('${card.id}')">${card.name}</span>`:'—'}</td>
+            <td>${card?`<span class="fighter-link" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">${card.name}</span>`:'—'}</td>
             <td>${opp?`<span class="fighter-link" onclick="goToFighter('${opp.id}')">${opp.name}</span>`:'—'} <span style="cursor:pointer;color:var(--text3);font-size:11px;" onclick="openMatchupDetail('${p.id}')" title="View matchup">↗</span></td>
             <td>${picked?`<span style="color:var(--accent);font-weight:600;">${picked.name}</span>`:'<span style="color:var(--text3);">—</span>'}</td>
             <td><span class="line-display ${p.line&&p.line.startsWith('+')?'positive':p.line&&p.line.startsWith('-')?'negative':''}">${p.line||'—'}</span></td>
