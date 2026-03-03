@@ -329,6 +329,29 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .wc-champ-img{width:70px;height:70px;object-fit:cover;object-position:top;border-radius:6px;background:var(--bg3);flex-shrink:0}
 .wc-champ-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;margin-top:2px}
 .wc-champ-vacant{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px;font-style:italic}
+
+/* UFC RANKINGS SYNC */
+.sync-section{margin-bottom:20px}
+.sync-section-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:10px;cursor:pointer}
+.sync-section-header:hover{color:var(--accent)}
+.sync-section-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.sync-section-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);font-weight:600}
+.sync-section-body{max-height:400px;overflow-y:auto}
+.sync-row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px}
+.sync-row:hover{background:var(--bg3)}
+.sync-ufc-name{font-weight:600}
+.sync-ufc-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px}
+.sync-match-exact{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:10px}
+.sync-match-fuzzy{color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:10px}
+.sync-match-none{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:10px}
+.sync-progress{background:var(--bg3);border-radius:4px;height:6px;margin:12px 0;overflow:hidden}
+.sync-progress-bar{height:100%;background:var(--accent);border-radius:4px;transition:width 0.3s ease}
+.sync-actions{display:flex;gap:6px}
+.sync-actions .btn{padding:4px 10px;font-size:11px}
+.sync-division-label{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);margin:14px 0 8px;padding-top:8px;border-top:1px solid var(--border)}
+.sync-division-label:first-child{border-top:none;margin-top:0;padding-top:0}
+.sync-champ-badge{display:inline-block;background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;padding:1px 6px;border-radius:3px;margin-left:6px}
+.sync-rank-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);min-width:22px}
 </style>
 </head>
 <body>
@@ -399,7 +422,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <input type="text" class="search-input" id="fighterSearch" placeholder="Search fighters..." oninput="onSearchInput()">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
       <button class="btn btn-primary btn-sm" onclick="openAddFighterModal()" style="margin-left:8px;">+ Add Fighter</button>
-      <button class="btn btn-secondary btn-sm" onclick="syncUFCData()" style="margin-left:4px;">🔄 Sync UFC Data</button>
+      <button class="btn btn-secondary btn-sm" onclick="openUFCSyncModal()" style="margin-left:4px;">🔄 Sync UFC Data</button>
       <span class="fighter-count-pill" id="fighterCountDisplay"></span>
     </div>
     <div class="fighters-body" id="fightersBody">
@@ -539,6 +562,14 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="modal" style="max-width:640px;">
     <div class="modal-header"><div class="modal-title">Sync Card</div><button class="modal-close" onclick="closeModal('syncCardModal')">✕</button></div>
     <div id="syncCardBody"></div>
+  </div>
+</div>
+
+<!-- UFC Rankings Sync Modal -->
+<div class="modal-overlay" id="ufcSyncModal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header"><div class="modal-title">Sync UFC Rankings</div><button class="modal-close" onclick="closeModal('ufcSyncModal')">✕</button></div>
+    <div id="ufcSyncBody"><div class="loading"><div class="spinner"></div>Fetching UFC rankings...</div></div>
   </div>
 </div>
 
@@ -704,7 +735,7 @@ function rebuildIndexes(){fightersById=new Map(allFighters.map(f=>[f.id,f]));car
 const weightOrder=['Strawweight','Flyweight','Bantamweight','Featherweight','Lightweight','Welterweight','Middleweight','Light Heavyweight','Heavyweight',"Women's Strawweight","Women's Flyweight","Women's Bantamweight","Women's Featherweight"];
 
 const CHAMP_BASE=SUPABASE_URL+'/storage/v1/object/public/champion-images/';
-const CHAMPIONS={
+const CHAMPIONS_FALLBACK={
   'Flyweight':{name:'Joshua Van',img:'flyweight.png'},
   'Bantamweight':{name:'Petr Yan',img:'bantamweight.png'},
   'Featherweight':{name:'Alexander Volkanovski',img:'featherweight.png'},
@@ -719,6 +750,21 @@ const CHAMPIONS={
   'BMF':{name:'Max Holloway',img:'bmf.png'},
   'P4P':{name:'Islam Makhachev',img:'pfp.png'},
 };
+function getChampions(){
+  const champs={};
+  for(const wc of [...weightOrder,...SPECIAL_DIVISIONS]){
+    const dbChamp=allFighters.find(f=>f.weight_class===wc&&f.is_champion);
+    const fb=CHAMPIONS_FALLBACK[wc];
+    if(dbChamp){
+      champs[wc]={name:dbChamp.name,img:dbChamp.image_url||null,id:dbChamp.id,fromDb:true};
+    }else if(fb){
+      champs[wc]={name:fb.name,img:fb.img?CHAMP_BASE+fb.img:null,id:null,fromDb:false};
+    }else{
+      champs[wc]={name:'Vacant',img:null,id:null,fromDb:false};
+    }
+  }
+  return champs;
+}
 const VACANT_IMG='https://images.foxtv.com/static.livenowfox.com/www.livenowfox.com/content/uploads/2024/08/1280/720/Spirit-Halloween-store.jpg?ve=1&tl=1';
 const SPECIAL_DIVISIONS=['BMF','P4P'];
 
@@ -881,6 +927,7 @@ function renderWCGrid(){
     return weightOrder.indexOf(a[0])-weightOrder.indexOf(b[0]);
   });
   // Add BMF and P4P as special non-clickable cards at the end
+  const CHAMPIONS=getChampions();
   SPECIAL_DIVISIONS.forEach(div=>{
     const champ=CHAMPIONS[div];
     if(champ&&!sorted.find(([wc])=>wc===div)){
@@ -894,7 +941,7 @@ function renderWCGrid(){
     if(champ&&champ.name==='Vacant'){
       champHtml=`<img class="wc-champ-img" src="${VACANT_IMG}" alt="Vacant" loading="lazy">`;
     } else if(champ&&champ.img){
-      champHtml=`<img class="wc-champ-img" src="${CHAMP_BASE}${champ.img}" alt="${champ.name}" loading="lazy">`;
+      champHtml=`<img class="wc-champ-img" src="${champ.img}" alt="${champ.name}" loading="lazy">`;
     }
     let champLabel='';
     if(champ&&champ.name==='Vacant'){
@@ -2710,6 +2757,481 @@ async function confirmSyncNewFights() {
 
 function fighterToSlug(name){
   return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+// ---- UFC RANKINGS SYNC ----
+
+const UFC_DIVISION_MAP={
+  // English
+  'flyweight':'Flyweight','bantamweight':'Bantamweight','featherweight':'Featherweight',
+  'lightweight':'Lightweight','welterweight':'Welterweight','middleweight':'Middleweight',
+  'light heavyweight':'Light Heavyweight','heavyweight':'Heavyweight',
+  "women's strawweight":"Women's Strawweight","women's flyweight":"Women's Flyweight",
+  "women's bantamweight":"Women's Bantamweight","women's featherweight":"Women's Featherweight",
+  'strawweight':'Strawweight',
+  // French (codetabs proxy may return French)
+  'poids mouche':'Flyweight','poids coq':'Bantamweight','poids plume':'Featherweight',
+  'poids légers':'Lightweight','poids legers':'Lightweight',
+  'poids mi-moyens':'Welterweight','poids moyens':'Middleweight',
+  'poids mi-lourds':'Light Heavyweight','poids lourds':'Heavyweight',
+  'poids paille':'Strawweight',
+  'poids mouche féminin':"Women's Flyweight",'poids mouche feminin':"Women's Flyweight",
+  'poids coq féminin':"Women's Bantamweight",'poids coq feminin':"Women's Bantamweight",
+  'poids paille féminin':"Women's Strawweight",'poids paille feminin':"Women's Strawweight",
+  'poids plume féminin':"Women's Featherweight",'poids plume feminin':"Women's Featherweight",
+  // With "Division" suffix
+  'flyweight division':'Flyweight','bantamweight division':'Bantamweight',
+  'featherweight division':'Featherweight','lightweight division':'Lightweight',
+  'welterweight division':'Welterweight','middleweight division':'Middleweight',
+  'light heavyweight division':'Light Heavyweight','heavyweight division':'Heavyweight',
+  "women's strawweight division":"Women's Strawweight","women's flyweight division":"Women's Flyweight",
+  "women's bantamweight division":"Women's Bantamweight","women's featherweight division":"Women's Featherweight",
+  'strawweight division':'Strawweight',
+};
+const UFC_SKIP_DIVISIONS=['pound-for-pound','pfp','p4p','bmf','men\'s pound','women\'s pound'];
+
+function normalizeUFCDivision(raw){
+  if(!raw)return null;
+  const lower=raw.trim().toLowerCase().replace(/\s+/g,' ');
+  if(UFC_SKIP_DIVISIONS.some(s=>lower.includes(s)))return null;
+  // Direct map lookup
+  if(UFC_DIVISION_MAP[lower])return UFC_DIVISION_MAP[lower];
+  // Try stripping "division" suffix
+  const stripped=lower.replace(/\s*division\s*$/,'').trim();
+  if(UFC_DIVISION_MAP[stripped])return UFC_DIVISION_MAP[stripped];
+  // Fuzzy: check if any key is a substring
+  for(const[k,v]of Object.entries(UFC_DIVISION_MAP)){
+    if(lower.includes(k)||k.includes(lower))return v;
+  }
+  return null;
+}
+
+function parseUFCRankingsHTML(html){
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(html,'text/html');
+  const divisions={};
+
+  const groupings=doc.querySelectorAll('.view-grouping');
+  groupings.forEach(group=>{
+    // Get division name from header or champion h4
+    const header=group.querySelector('.view-grouping-header');
+    const champH4=group.querySelector('.rankings--athlete--champion h4');
+    const rawDiv=champH4?.textContent||header?.textContent||'';
+    const division=normalizeUFCDivision(rawDiv);
+    if(!division)return;
+
+    const divData={champion:null,ranked:[]};
+
+    // Parse champion
+    const champSection=group.querySelector('.rankings--athlete--champion');
+    if(champSection){
+      const champLink=champSection.querySelector('h5 a, .info a');
+      if(champLink){
+        const slug=champLink.getAttribute('href')?.replace(/^\/athlete\//,'').replace(/\/$/,'')||'';
+        divData.champion={name:champLink.textContent.trim(),slug};
+      }
+    }
+
+    // Parse ranked fighters from table body
+    const rows=group.querySelectorAll('tbody tr');
+    rows.forEach(row=>{
+      const rankCell=row.querySelector('.views-field-weight-class-rank');
+      const nameCell=row.querySelector('.views-field-title a');
+      if(!nameCell)return;
+      const rank=parseInt(rankCell?.textContent?.trim())||0;
+      if(rank<1||rank>15)return;
+      const slug=nameCell.getAttribute('href')?.replace(/^\/athlete\//,'').replace(/\/$/,'')||'';
+      divData.ranked.push({rank,name:nameCell.textContent.trim(),slug});
+    });
+
+    if(divData.champion||divData.ranked.length)divisions[division]=divData;
+  });
+
+  return divisions;
+}
+
+async function getUFCRankingsCache(){
+  try{
+    const rows=await sbGet('ufc_rankings_cache','order=fetched_at.desc&limit=1');
+    if(rows&&rows.length){
+      const row=rows[0];
+      const ageMs=Date.now()-new Date(row.fetched_at).getTime();
+      const ageHrs=ageMs/(1000*60*60);
+      if(ageHrs<24){
+        console.log(`UFC rankings loaded from cache (${ageHrs.toFixed(1)}h old)`);
+        return typeof row.data==='string'?JSON.parse(row.data):row.data;
+      }
+    }
+  }catch(e){console.warn('UFC rankings cache read failed:',e.message)}
+  return null;
+}
+
+async function cacheUFCRankings(data){
+  try{
+    await sbDeleteWhere('ufc_rankings_cache','id=not.is.null');
+    await sbPost('ufc_rankings_cache',{data:JSON.stringify(data),fetched_at:new Date().toISOString()});
+  }catch(e){console.warn('UFC rankings cache write failed:',e.message)}
+}
+
+async function fetchUFCRankings(forceRefresh=false){
+  if(!forceRefresh){
+    const cached=await getUFCRankingsCache();
+    if(cached)return cached;
+  }
+
+  const resp=await fetch('https://api.codetabs.com/v1/proxy?quest=https://www.ufc.com/rankings');
+  if(!resp.ok)throw new Error('UFC rankings fetch failed: '+resp.status);
+  const html=await resp.text();
+  const data=parseUFCRankingsHTML(html);
+
+  if(Object.keys(data).length===0)throw new Error('No divisions parsed from UFC rankings page');
+
+  await cacheUFCRankings(data);
+  console.log(`UFC rankings fetched: ${Object.keys(data).length} divisions`);
+  return data;
+}
+
+function matchRankingsToFighters(rankingsData){
+  const results=[];
+  const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z ]/g,'').trim();
+
+  for(const[division,divData]of Object.entries(rankingsData)){
+    // Champion
+    if(divData.champion){
+      const ufcName=divData.champion.name;
+      const slug=divData.champion.slug;
+      let matched=null,confidence='none';
+
+      // Exact normalized match
+      const exact=allFighters.find(f=>norm(f.name)===norm(ufcName)&&(!f.weight_class||f.weight_class===division));
+      if(exact){matched=exact;confidence='exact'}
+      else{
+        const exactAny=allFighters.find(f=>norm(f.name)===norm(ufcName));
+        if(exactAny){matched=exactAny;confidence='exact'}
+        else{
+          const fuzzy=allFighters.find(f=>fuzzyMatchFighter(f.name,ufcName));
+          if(fuzzy){matched=fuzzy;confidence='fuzzy'}
+        }
+      }
+      results.push({ufc_name:ufcName,division,rank:0,is_champion:true,slug,matched_fighter:matched,confidence});
+    }
+
+    // Ranked 1-15
+    for(const r of divData.ranked){
+      const ufcName=r.name;
+      const slug=r.slug;
+      let matched=null,confidence='none';
+
+      const exact=allFighters.find(f=>norm(f.name)===norm(ufcName)&&(!f.weight_class||f.weight_class===division));
+      if(exact){matched=exact;confidence='exact'}
+      else{
+        const exactAny=allFighters.find(f=>norm(f.name)===norm(ufcName));
+        if(exactAny){matched=exactAny;confidence='exact'}
+        else{
+          const fuzzy=allFighters.find(f=>fuzzyMatchFighter(f.name,ufcName));
+          if(fuzzy){matched=fuzzy;confidence='fuzzy'}
+        }
+      }
+      results.push({ufc_name:ufcName,division,rank:r.rank,is_champion:false,slug,matched_fighter:matched,confidence});
+    }
+  }
+
+  return results;
+}
+
+// State for sync review
+let _ufcSyncResults=[];
+
+function renderUFCSyncReview(matchResults){
+  _ufcSyncResults=matchResults.map(r=>({...r,action:r.confidence==='none'?'skip':'accept'}));
+
+  const needsReview=_ufcSyncResults.filter(r=>r.confidence==='fuzzy'||r.confidence==='none');
+  const autoMatched=_ufcSyncResults.filter(r=>r.confidence==='exact');
+
+  // Group by division
+  const groupByDiv=(arr)=>{
+    const groups={};
+    arr.forEach(r=>{if(!groups[r.division])groups[r.division]=[];groups[r.division].push(r)});
+    return groups;
+  };
+
+  const renderRow=(r,idx)=>{
+    const rankLabel=r.is_champion?`<span class="sync-champ-badge">CHAMP</span>`:`<span class="sync-rank-badge">#${r.rank}</span>`;
+    const matchInfo=r.confidence==='exact'
+      ?`<span class="sync-match-exact">✓ ${r.matched_fighter.name}</span>`
+      :r.confidence==='fuzzy'
+        ?`<span class="sync-match-fuzzy">~ ${r.matched_fighter?.name||'?'}</span>`
+        :`<span class="sync-match-none">NOT IN DB</span>`;
+    const globalIdx=_ufcSyncResults.indexOf(r);
+    const actionBtns=r.confidence==='exact'
+      ?`<label style="display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);cursor:pointer;"><input type="checkbox" checked onchange="toggleSyncAction(${globalIdx},this.checked?'accept':'skip')" style="accent-color:var(--accent);width:14px;height:14px;"> merge</label>`
+      :r.confidence==='fuzzy'
+        ?`<div class="sync-actions">
+            <button class="btn btn-sm ${r.action==='accept'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${globalIdx},'accept')">Accept</button>
+            <button class="btn btn-sm ${r.action==='create'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${globalIdx},'create')">New</button>
+            <button class="btn btn-sm ${r.action==='skip'?'btn-danger':'btn-secondary'}" onclick="setSyncAction(${globalIdx},'skip')">Skip</button>
+          </div>`
+        :`<div class="sync-actions">
+            <button class="btn btn-sm ${r.action==='create'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${globalIdx},'create')">Import</button>
+            <button class="btn btn-sm ${r.action==='skip'?'btn-danger':'btn-secondary'}" onclick="setSyncAction(${globalIdx},'skip')">Skip</button>
+          </div>`;
+
+    return `<div class="sync-row" id="syncRow_${globalIdx}">
+      <div><span class="sync-ufc-name">${r.ufc_name}</span> ${rankLabel}<div class="sync-ufc-meta">${r.division}</div></div>
+      <div>${matchInfo}</div>
+      <div>${actionBtns}</div>
+    </div>`;
+  };
+
+  const renderSection=(title,items,collapsed=false)=>{
+    if(!items.length)return '';
+    const groups=groupByDiv(items);
+    const bodyId='syncSection_'+title.replace(/\s/g,'');
+    return `<div class="sync-section">
+      <div class="sync-section-header" onclick="document.getElementById('${bodyId}').style.display=document.getElementById('${bodyId}').style.display==='none'?'block':'none'">
+        <span class="sync-section-title">${title}</span>
+        <span class="sync-section-count">${items.length}</span>
+      </div>
+      <div class="sync-section-body" id="${bodyId}" style="${collapsed?'display:none':''}">
+        ${Object.entries(groups).map(([div,rows])=>`<div class="sync-division-label">${div}</div>${rows.map(renderRow).join('')}`).join('')}
+      </div>
+    </div>`;
+  };
+
+  const totalMerge=_ufcSyncResults.filter(r=>r.action==='accept').length;
+  const totalCreate=_ufcSyncResults.filter(r=>r.action==='create').length;
+  const totalSkip=_ufcSyncResults.filter(r=>r.action==='skip').length;
+
+  document.getElementById('ufcSyncBody').innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:16px;">
+      ${_ufcSyncResults.length} fighters across ${Object.keys(groupByDiv(_ufcSyncResults)).length} divisions
+    </div>
+    ${renderSection('Needs Review',needsReview,false)}
+    ${renderSection('Auto-Matched',autoMatched,true)}
+    <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);" id="syncSummary">
+        ${totalMerge} merge · ${totalCreate} create · ${totalSkip} skip
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" onclick="closeModal('ufcSyncModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmUFCSync()">Apply Changes</button>
+      </div>
+    </div>`;
+}
+
+function setSyncAction(idx,action){
+  _ufcSyncResults[idx].action=action;
+  // Re-render just the summary and re-render buttons in that row
+  updateSyncSummary();
+  // Re-render the row's action buttons
+  const r=_ufcSyncResults[idx];
+  const row=document.getElementById('syncRow_'+idx);
+  if(!row)return;
+  const actionsDiv=row.querySelector('.sync-actions');
+  if(!actionsDiv)return;
+  if(r.confidence==='fuzzy'){
+    actionsDiv.innerHTML=`
+      <button class="btn btn-sm ${r.action==='accept'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${idx},'accept')">Accept</button>
+      <button class="btn btn-sm ${r.action==='create'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${idx},'create')">New</button>
+      <button class="btn btn-sm ${r.action==='skip'?'btn-danger':'btn-secondary'}" onclick="setSyncAction(${idx},'skip')">Skip</button>`;
+  }else{
+    actionsDiv.innerHTML=`
+      <button class="btn btn-sm ${r.action==='create'?'btn-primary':'btn-secondary'}" onclick="setSyncAction(${idx},'create')">Import</button>
+      <button class="btn btn-sm ${r.action==='skip'?'btn-danger':'btn-secondary'}" onclick="setSyncAction(${idx},'skip')">Skip</button>`;
+  }
+}
+
+function toggleSyncAction(idx,action){
+  _ufcSyncResults[idx].action=action;
+  updateSyncSummary();
+}
+
+function updateSyncSummary(){
+  const totalMerge=_ufcSyncResults.filter(r=>r.action==='accept').length;
+  const totalCreate=_ufcSyncResults.filter(r=>r.action==='create').length;
+  const totalSkip=_ufcSyncResults.filter(r=>r.action==='skip').length;
+  const el=document.getElementById('syncSummary');
+  if(el)el.textContent=`${totalMerge} merge · ${totalCreate} create · ${totalSkip} skip`;
+}
+
+async function confirmUFCSync(){
+  const body=document.getElementById('ufcSyncBody');
+  body.innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+    <div style="color:var(--accent);margin-bottom:12px;">Applying rankings...</div>
+    <div id="ufcSyncApplyProgress" style="color:var(--text2);">0 / ${_ufcSyncResults.length}</div>
+    <div class="sync-progress"><div class="sync-progress-bar" id="ufcSyncBar" style="width:0%"></div></div>
+  </div>`;
+
+  let merged=0,created=0,skipped=0;
+  const now=new Date().toISOString();
+
+  // Collect all fighters that should have rankings (for stale cleanup)
+  const rankedFighterIds=new Set();
+
+  for(let i=0;i<_ufcSyncResults.length;i++){
+    const r=_ufcSyncResults[i];
+    const pct=Math.round(((i+1)/_ufcSyncResults.length)*100);
+    document.getElementById('ufcSyncApplyProgress').textContent=`${i+1} / ${_ufcSyncResults.length} — ${r.ufc_name}`;
+    document.getElementById('ufcSyncBar').style.width=pct+'%';
+
+    if(r.action==='accept'&&r.matched_fighter){
+      try{
+        const patch={ufc_ranking:r.is_champion?0:r.rank,is_champion:r.is_champion,last_synced:now};
+        if(r.slug)patch.ufc_profile_url='https://www.ufc.com/athlete/'+r.slug;
+        if(r.matched_fighter.weight_class!==r.division)patch.weight_class=r.division;
+        await sbPatch('fighters',r.matched_fighter.id,patch);
+        Object.assign(r.matched_fighter,patch);
+        rankedFighterIds.add(r.matched_fighter.id);
+        merged++;
+      }catch(e){console.warn('Failed to update',r.ufc_name,e.message);skipped++}
+    }else if(r.action==='create'){
+      try{
+        const newFighter={
+          name:r.ufc_name,weight_class:r.division,flag_type:'NEUTRAL',
+          ufc_ranking:r.is_champion?0:r.rank,is_champion:r.is_champion,last_synced:now,
+          notes:'Imported via UFC Rankings Sync'
+        };
+        if(r.slug)newFighter.ufc_profile_url='https://www.ufc.com/athlete/'+r.slug;
+        const rows=await sbPost('fighters',newFighter);
+        if(rows?.[0]){allFighters.push(rows[0]);rankedFighterIds.add(rows[0].id);created++}
+      }catch(e){console.warn('Failed to create',r.ufc_name,e.message);skipped++}
+    }else{skipped++}
+  }
+
+  // Clear stale rankings for fighters not in this sync
+  const stale=allFighters.filter(f=>f.ufc_ranking!=null&&!rankedFighterIds.has(f.id));
+  for(const f of stale){
+    try{
+      await sbPatch('fighters',f.id,{ufc_ranking:null,is_champion:false});
+      f.ufc_ranking=null;f.is_champion=false;
+    }catch(e){console.warn('Failed to clear stale ranking for',f.name)}
+  }
+
+  await loadFighters();
+  renderWCGrid();
+
+  // Show completion with enrichment option
+  const needsEnrich=allFighters.filter(f=>rankedFighterIds.has(f.id)&&(!f.image_url||!f.record||!f.age));
+  body.innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+      <div style="color:var(--green);margin-bottom:12px;">✓ Rankings sync complete</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${merged} fighter${merged!==1?'s':''} updated</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${created} new fighter${created!==1?'s':''} created</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${skipped} skipped</div>
+      ${stale.length?`<div style="color:var(--text3);margin-bottom:4px;">${stale.length} stale ranking${stale.length!==1?'s':''} cleared</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-secondary" onclick="closeModal('ufcSyncModal')">Done</button>
+        ${needsEnrich.length?`<button class="btn btn-primary" onclick="enrichFighterProfiles()">Enrich ${needsEnrich.length} Profiles</button>`:''}
+      </div>
+    </div>`;
+
+  toast(`Synced ${merged+created} fighter${merged+created!==1?'s':''}, created ${created} new`,'success');
+}
+
+async function openUFCSyncModal(){
+  openModal('ufcSyncModal');
+  document.getElementById('ufcSyncBody').innerHTML=`<div class="loading"><div class="spinner"></div>Fetching UFC rankings...</div>`;
+  try{
+    const data=await fetchUFCRankings();
+    const results=matchRankingsToFighters(data);
+    if(!results.length){
+      document.getElementById('ufcSyncBody').innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);padding:8px 0;">No rankings data found. Try again later.</div>`;
+      return;
+    }
+    renderUFCSyncReview(results);
+  }catch(e){
+    console.error('UFC Rankings sync error:',e);
+    document.getElementById('ufcSyncBody').innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);padding:8px 0;">
+      Error: ${e.message}<br><button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="openUFCSyncModal()">Retry</button>
+    </div>`;
+  }
+}
+
+async function enrichFighterProfiles(){
+  const candidates=allFighters.filter(f=>f.last_synced&&(!f.image_url||!f.record||!f.nickname||!f.age));
+  if(!candidates.length){toast('All synced fighters fully enriched','success');return}
+
+  const body=document.getElementById('ufcSyncBody');
+  body.innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+      <div style="color:var(--accent);margin-bottom:12px;">Enriching profiles from UFC.com...</div>
+      <div id="enrichProgress" style="color:var(--text2);margin-bottom:6px;">0 / ${candidates.length} fighters checked</div>
+      <div id="enrichTally" style="color:var(--text2);margin-bottom:6px;"></div>
+      <div id="enrichCurrent" style="color:var(--text3);"></div>
+      <div class="sync-progress"><div class="sync-progress-bar" id="enrichBar" style="width:0%"></div></div>
+    </div>`;
+
+  let updated=0,notFound=0,stats={photo:0,record:0,nickname:0,age:0};
+  for(let i=0;i<candidates.length;i++){
+    const f=candidates[i];
+    const pct=Math.round(((i+1)/candidates.length)*100);
+    document.getElementById('enrichProgress').textContent=`${i+1} / ${candidates.length} fighters checked`;
+    document.getElementById('enrichCurrent').textContent=f.name;
+    document.getElementById('enrichBar').style.width=pct+'%';
+
+    try{
+      const slug=f.ufc_profile_url?f.ufc_profile_url.replace(/.*\/athlete\//,''):fighterToSlug(f.name);
+      const resp=await fetch(`https://api.codetabs.com/v1/proxy?quest=https://www.ufc.com/athlete/${slug}`);
+      if(resp.ok){
+        const html=await resp.text();
+        const patch={};
+
+        if(!f.image_url){
+          const m=html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+          if(m&&m[1]){patch.image_url=m[1];stats.photo++}
+        }
+        if(!f.record){
+          const m=html.match(/hero-profile__division-body[^>]*>\s*(\d+-\d+-\d+)/i);
+          if(m&&m[1]){patch.record=m[1];stats.record++}
+        }
+        if(!f.nickname){
+          const m=html.match(/hero-profile__nickname[^>]*>&quot;([^&]+)&quot;/i)||html.match(/hero-profile__nickname[^>]*>"([^"]+)"/i);
+          if(m&&m[1]){patch.nickname=m[1];stats.nickname++}
+        }
+        if(!f.age){
+          const m=html.match(/"birthDate"\s*:\s*"(\d{4}-\d{2}-\d{2})"/);
+          if(m&&m[1]){
+            const born=new Date(m[1]),now=new Date();
+            let age=now.getFullYear()-born.getFullYear();
+            if(now<new Date(now.getFullYear(),born.getMonth(),born.getDate()))age--;
+            patch.age=age;stats.age++;
+          }
+        }
+
+        if(Object.keys(patch).length){
+          patch.last_synced=new Date().toISOString();
+          await sbPatch('fighters',f.id,patch);
+          Object.assign(f,patch);
+          updated++;
+        }else{notFound++}
+      }else{notFound++}
+    }catch(e){notFound++}
+
+    const parts=[];
+    if(stats.photo)parts.push(`${stats.photo} photos`);
+    if(stats.record)parts.push(`${stats.record} records`);
+    if(stats.nickname)parts.push(`${stats.nickname} nicknames`);
+    if(stats.age)parts.push(`${stats.age} ages`);
+    document.getElementById('enrichTally').textContent=(parts.length?parts.join(' · '):'—')+` · ${notFound} not found`;
+    if(i<candidates.length-1) await new Promise(r=>setTimeout(r,500));
+  }
+
+  const summary=[];
+  if(stats.photo)summary.push(`${stats.photo} photo${stats.photo!==1?'s':''}`);
+  if(stats.record)summary.push(`${stats.record} record${stats.record!==1?'s':''}`);
+  if(stats.nickname)summary.push(`${stats.nickname} nickname${stats.nickname!==1?'s':''}`);
+  if(stats.age)summary.push(`${stats.age} age${stats.age!==1?'s':''}`);
+  body.innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
+      <div style="color:var(--green);margin-bottom:12px;">✓ Enrichment complete</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${candidates.length} fighters checked</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${updated} updated${summary.length?' — '+summary.join(', '):''}</div>
+      <div style="color:var(--text2);margin-bottom:16px;">${notFound} not on UFC.com</div>
+      <button class="btn btn-secondary" onclick="closeModal('ufcSyncModal')">Done</button>
+    </div>`;
+
+  await loadFighters();
+  if(updated) toast(`${updated} fighter${updated!==1?'s':''} enriched from UFC.com`,'success');
 }
 
 async function syncUFCData(){
