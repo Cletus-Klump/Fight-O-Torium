@@ -1240,26 +1240,7 @@ async function saveDragOrder() {
   } catch(e) { toast('Error saving order: ' + e.message, 'error'); }
 }
 
-// ---- MAIN EVENT / HOT MATCHUP TOGGLES ----
-async function toggleMainEvent(pickId) {
-  const pick = allPicks.find(p => p.id === pickId);
-  if (!pick) return;
-  const newVal = !pick.main_event;
-  try {
-    // If turning on, clear any other main_event on this card
-    if (newVal) {
-      const others = allPicks.filter(p => p.card_id === pick.card_id && p.main_event && p.id !== pickId);
-      for (const o of others) {
-        await sbPatch('picks', o.id, { main_event: false });
-        o.main_event = false;
-      }
-    }
-    await sbPatch('picks', pickId, { main_event: newVal });
-    pick.main_event = newVal;
-    showCardDetail(currentCardId);
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
+// ---- HOT MATCHUP TOGGLE ----
 async function toggleHotMatchup(pickId) {
   const pick = allPicks.find(p => p.id === pickId);
   if (!pick) return;
