@@ -712,7 +712,7 @@ function renderHome(){
     const meB = allFighters.find(f => f.id === mePick.fighter_b_id);
     const mePhotoA = meA?.image_url ? `<img src="${meA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     const mePhotoB = meB?.image_url ? `<img src="${meB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${meCard.id}')">
+    html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${mePick.id}')">
       <div class="home-card-title">⭐ Main Event</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${mePhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meA?.name||'?'}</span></div>
       <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
@@ -730,7 +730,7 @@ function renderHome(){
     const hmB = allFighters.find(f => f.id === hmPick.fighter_b_id);
     const hmPhotoA = hmA?.image_url ? `<img src="${hmA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
     const hmPhotoB = hmB?.image_url ? `<img src="${hmB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${meCard.id}')">
+    html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${hmPick.id}')">
       <div class="home-card-title">🔥 Hot Matchup</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${hmPhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmA?.name||'?'}</span></div>
       <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
