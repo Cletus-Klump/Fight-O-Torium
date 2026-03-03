@@ -53,6 +53,35 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .wc-card-special{cursor:default;opacity:0.85}
 .wc-card-special:hover{border-color:var(--border);background:var(--bg2)}
 
+/* EXPANDED DIVISION CARD */
+.wc-card-expanded{grid-column:1/-1;display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:0;overflow:hidden;cursor:default}
+.wc-expand-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;transition:background 0.15s}
+.wc-expand-header:hover{background:var(--bg3)}
+.wc-expand-header-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text);line-height:1}
+.wc-expand-header-actions{display:flex;align-items:center;gap:12px}
+.wc-expand-link{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-decoration:none;letter-spacing:1px;cursor:pointer;transition:color 0.15s}
+.wc-expand-link:hover{color:var(--text)}
+.wc-expand-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0;line-height:1;transition:color 0.15s}
+.wc-expand-close:hover{color:var(--accent)}
+.wc-expand-body{padding:0 20px 20px}
+.wc-expand-champ{display:flex;align-items:center;gap:16px;padding:16px;background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:6px;margin-bottom:16px}
+.wc-expand-champ-img{width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--accent);flex-shrink:0;background:var(--bg3)}
+.wc-expand-champ-info{display:flex;flex-direction:column;gap:2px}
+.wc-expand-champ-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);line-height:1;cursor:pointer;transition:color 0.15s}
+.wc-expand-champ-name:hover{color:var(--accent)}
+.wc-expand-champ-record{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.wc-expand-champ-badges{display:flex;gap:6px;align-items:center;margin-top:2px}
+.wc-expand-section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.wc-expand-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:4px;transition:background 0.15s}
+.wc-expand-row:hover{background:var(--bg3)}
+.wc-expand-rank{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);width:24px;text-align:right;flex-shrink:0}
+.wc-expand-row-img{width:36px;height:36px;object-fit:cover;border-radius:50%;border:1px solid var(--border);flex-shrink:0;background:var(--bg3)}
+.wc-expand-row-name{font-weight:600;font-size:13px;color:var(--text);cursor:pointer;transition:color 0.15s}
+.wc-expand-row-name:hover{color:var(--accent)}
+.wc-expand-row-record{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.wc-expand-row-flag{font-size:11px}
+.wc-expand-empty{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);padding:12px 10px;letter-spacing:1px}
+
 /* FIGHTER LIST + DETAIL (two panel) */
 .fighters-two-panel{flex:1;overflow:hidden;display:flex}
 .fighter-list-panel{width:260px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2)}
@@ -728,7 +757,7 @@ async function sbPatch(t,id,d){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}
 async function sbDelete(t,id){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 async function sbDeleteWhere(t,filter){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}?${filter}`,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
-let allFighters=[],allCards=[],allPicks=[],selectedFighterId=null,editingFighterId=null,currentCardId=null,currentWC=null;
+let allFighters=[],allCards=[],allPicks=[],selectedFighterId=null,editingFighterId=null,currentCardId=null,currentWC=null,expandedWC=null;
 let fightersById=new Map(),cardsById=new Map(),picksById=new Map();
 function rebuildIndexes(){fightersById=new Map(allFighters.map(f=>[f.id,f]));cardsById=new Map(allCards.map(c=>[c.id,c]));picksById=new Map(allPicks.map(p=>[p.id,p]));}
 
@@ -937,6 +966,9 @@ function renderWCGrid(){
   grid.innerHTML=sorted.map(([wc,fighters])=>{
     const isSpecial=SPECIAL_DIVISIONS.includes(wc);
     const champ=CHAMPIONS[wc];
+    if(!isSpecial&&expandedWC===wc){
+      return renderExpandedWCCard(wc,fighters,champ);
+    }
     let champHtml='';
     if(champ&&champ.name==='Vacant'){
       champHtml=`<img class="wc-champ-img" src="${VACANT_IMG}" alt="Vacant" loading="lazy">`;
@@ -949,7 +981,7 @@ function renderWCGrid(){
     } else if(isSpecial&&champ){
       champLabel=`<div class="wc-champ-name">${champ.name}</div>`;
     }
-    const onclick=isSpecial?'':`onclick="openWC('${wc.replace(/'/g,"\\'")}')"`;
+    const onclick=isSpecial?'':`onclick="toggleWCExpand('${wc.replace(/'/g,"\\'")}')"`;
     const cardCls='wc-card'+(isSpecial?' wc-card-special':'');
     return `<div class="${cardCls}" ${onclick}>
       ${champHtml}
@@ -963,10 +995,107 @@ function renderWCGrid(){
   }).join('');
 }
 
+function toggleWCExpand(wc){
+  expandedWC=expandedWC===wc?null:wc;
+  renderWCGrid();
+  if(expandedWC){
+    const el=document.getElementById('wcExpanded_'+wc.replace(/[^a-zA-Z]/g,''));
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+function renderExpandedWCCard(wc,fighters,champ){
+  const escapedWC=wc.replace(/'/g,"\\'");
+  const cardId='wcExpanded_'+wc.replace(/[^a-zA-Z]/g,'');
+  const silhouetteSvg=`<svg width="100%" height="100%" viewBox="0 0 64 64" style="border-radius:50%;"><rect width="64" height="64" fill="#1a1a1a"/><circle cx="32" cy="24" r="11" fill="#333"/><ellipse cx="32" cy="54" rx="16" ry="14" fill="#333"/></svg>`;
+  const silhouetteSm=`<svg width="36" height="36" viewBox="0 0 36 36" style="border-radius:50%;"><rect width="36" height="36" fill="#1a1a1a"/><circle cx="18" cy="13" r="6" fill="#333"/><ellipse cx="18" cy="30" rx="9" ry="8" fill="#333"/></svg>`;
+
+  // Champion section
+  let champSection='';
+  if(champ&&champ.name!=='Vacant'){
+    const champImg=champ.img?`<img class="wc-expand-champ-img" src="${champ.img}" alt="${champ.name}" loading="lazy">`:`<div class="wc-expand-champ-img" style="display:flex;align-items:center;justify-content:center;">${silhouetteSvg}</div>`;
+    const champClick=champ.id?`onclick="openWCAndSelect('${escapedWC}','${champ.id}')"`:'';
+    const dbF=champ.id?fightersById.get(champ.id):null;
+    const record=dbF&&dbF.record?`<div class="wc-expand-champ-record">${dbF.record}</div>`:'';
+    const flagBadge=dbF&&dbF.flag_type?`<span style="font-size:12px;" title="${dbF.flag_type}">${flagEmoji[dbF.flag_type]||''}</span>`:'';
+    champSection=`<div class="wc-expand-champ">
+      ${champImg}
+      <div class="wc-expand-champ-info">
+        <div class="wc-expand-champ-name" ${champClick}>${champ.name}</div>
+        ${record}
+        <div class="wc-expand-champ-badges">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--accent);text-transform:uppercase;">Champion</span>
+          ${flagBadge}
+        </div>
+      </div>
+    </div>`;
+  } else {
+    champSection=`<div class="wc-expand-champ" style="border-color:var(--border);background:var(--bg3);">
+      <div class="wc-expand-champ-img" style="display:flex;align-items:center;justify-content:center;border-color:var(--text3);">${silhouetteSvg}</div>
+      <div class="wc-expand-champ-info">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text3);line-height:1;">Vacant</div>
+      </div>
+    </div>`;
+  }
+
+  // Ranked fighters (ufc_ranking 1-15, excluding champion)
+  const ranked=fighters.filter(f=>f.ufc_ranking&&f.ufc_ranking>=1&&f.ufc_ranking<=15&&!f.is_champion).sort((a,b)=>a.ufc_ranking-b.ufc_ranking);
+  // Unranked tracked fighters (no ufc_ranking, not champion)
+  const unranked=fighters.filter(f=>!f.ufc_ranking&&!f.is_champion).sort((a,b)=>a.name.split(' ').pop().localeCompare(b.name.split(' ').pop()));
+
+  let rankedSection='';
+  if(ranked.length){
+    rankedSection=`<div class="wc-expand-section-label">UFC Rankings</div>`+ranked.map(f=>renderExpandedFighterRow(f,'#'+f.ufc_ranking,escapedWC,silhouetteSm)).join('');
+  }
+
+  let unrankedSection='';
+  if(unranked.length){
+    unrankedSection=`<div class="wc-expand-section-label">Tracked Fighters</div>`+unranked.map(f=>renderExpandedFighterRow(f,'•',escapedWC,silhouetteSm)).join('');
+  }
+
+  const emptyState=(!ranked.length&&!unranked.length&&!(champ&&champ.id))?`<div class="wc-expand-empty">No fighters tracked in this division</div>`:'';
+
+  return `<div class="wc-card-expanded" id="${cardId}">
+    <div class="wc-expand-header" onclick="toggleWCExpand('${escapedWC}')">
+      <div class="wc-expand-header-title">${wc}</div>
+      <div class="wc-expand-header-actions">
+        <span class="wc-expand-link" onclick="event.stopPropagation();openWC('${escapedWC}')">View Full Page →</span>
+        <button class="wc-expand-close" onclick="event.stopPropagation();toggleWCExpand('${escapedWC}')">×</button>
+      </div>
+    </div>
+    <div class="wc-expand-body">
+      ${champSection}
+      ${rankedSection}
+      ${unrankedSection}
+      ${emptyState}
+    </div>
+  </div>`;
+}
+
+function renderExpandedFighterRow(f,rankLabel,escapedWC,silhouetteSm){
+  const img=f.image_url?`<img class="wc-expand-row-img" src="${f.image_url}" alt="${f.name}" loading="lazy">`:`<div class="wc-expand-row-img" style="display:flex;align-items:center;justify-content:center;">${silhouetteSm}</div>`;
+  const record=f.record?`<span class="wc-expand-row-record">${f.record}</span>`:'';
+  const flag=f.flag_type?`<span class="wc-expand-row-flag" title="${f.flag_type}">${flagEmoji[f.flag_type]||''}</span>`:'';
+  return `<div class="wc-expand-row">
+    <span class="wc-expand-rank">${rankLabel}</span>
+    ${img}
+    <span class="wc-expand-row-name" onclick="openWCAndSelect('${escapedWC}','${f.id}')">${f.name}</span>
+    ${record}
+    ${flag}
+  </div>`;
+}
+
+function openWCAndSelect(wc,fighterId){
+  expandedWC=null;
+  openWC(wc);
+  selectFighter(fighterId);
+}
+
 function showWCGrid(){
   document.getElementById('wcGrid').style.display='block';
   document.getElementById('twoPanel').style.display='none';
   document.getElementById('searchResults').style.display='none';
+  expandedWC=null;
   currentWC=null;
   selectedFighterId=null;
 }
@@ -1096,7 +1225,7 @@ async function selectFighter(id){
             ${f.age?`<div class="meta-item"><div class="meta-label">Age</div><div class="meta-value">${f.age}</div></div>`:''}
             ${f.height?`<div class="meta-item"><div class="meta-label">Height</div><div class="meta-value">${f.height}</div></div>`:''}
             ${f.reach?`<div class="meta-item"><div class="meta-label">Reach</div><div class="meta-value">${f.reach}</div></div>`:''}
-            ${f.record?`<div class="meta-item"><div class="meta-label">Record</div><div class="meta-value">${f.record}</div></div>`:''}
+            ${f.record?`<div class="meta-item"><div class="meta-label">Record</div><div class="meta-value"><a href="https://www.tapology.com/search?term=${encodeURIComponent(f.name)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dashed var(--text3);transition:color 0.15s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text)'">${f.record}</a></div></div>`:''}
           </div>
         </div>
       </div>
