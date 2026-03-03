@@ -701,13 +701,9 @@ function renderWCGrid(){
     if(!groups[k])groups[k]=[];
     groups[k].push(f);
   });
-  // Sort by weight order
-  const sorted=Object.entries(groups).sort((a,b)=>{
-    const ai=weightOrder.indexOf(a[0]),bi=weightOrder.indexOf(b[0]);
-    if(ai===-1&&bi===-1)return a[0].localeCompare(b[0]);
-    if(ai===-1)return 1;
-    if(bi===-1)return -1;
-    return ai-bi;
+  // Sort by weight order, exclude unknown/unmapped classes
+  const sorted=Object.entries(groups).filter(([wc])=>weightOrder.includes(wc)).sort((a,b)=>{
+    return weightOrder.indexOf(a[0])-weightOrder.indexOf(b[0]);
   });
   // Add BMF and P4P as special non-clickable cards at the end
   SPECIAL_DIVISIONS.forEach(div=>{
