@@ -268,7 +268,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .home-matchup-fighters{display:flex;align-items:center;justify-content:center;gap:24px}
 .home-matchup-fighter{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-.home-matchup-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--border2);cursor:pointer;transition:all 0.15s;background:var(--bg3)}
+.home-matchup-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--border2);transition:all 0.15s;background:var(--bg3)}
 .home-matchup-photo:hover{border-color:var(--accent);transform:scale(1.08)}
 .home-matchup-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:color 0.15s}
 .home-matchup-name:hover{color:var(--accent)}
@@ -768,8 +768,8 @@ function renderHome(){
     const fA=fightersById.get(pick.fighter_a_id), fB=fightersById.get(pick.fighter_b_id);
     const navToFighterA=fA?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_a_id}')`:'';
     const navToFighterB=fB?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_b_id}')`:'';
-    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" onclick="event.stopPropagation();${navToFighterA}" alt="${fA?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
-    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" onclick="event.stopPropagation();${navToFighterB}" alt="${fB?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" alt="${fA?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" alt="${fB?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
 
     const isHot=ft.variant==='hot-nontitle'||ft.variant==='hot-title';
     const labelIcon=ft.belt ? ft.belt+' ' : (isHot ? flameIcon+' ' : '');
