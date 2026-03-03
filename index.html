@@ -997,7 +997,7 @@ function renderPickCard(p) {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         ${resultBadge}
-        <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--text2);cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">MATCHUP</button>
+        <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
         <button onclick="event.stopPropagation();deletePick('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
       </div>
@@ -1146,9 +1146,9 @@ function openMatchupDetail(pickId){
     ${f.flag_detail?`<div class="card" style="margin-bottom:12px;"><div class="card-title">Flag Detail</div><div class="flag-detail-text">${f.flag_detail}</div></div>`:''}
     ${f.notes?`<div class="card"><div class="card-title">Notes</div><div class="flag-detail-text">${f.notes}</div></div>`:''}
   </div>`;
-  const summaryHtml=p.fight_summary?`<div class="card" style="margin-top:20px;"><div class="card-title">Fight Summary</div><div class="flag-detail-text" style="white-space:pre-wrap;">${p.fight_summary}</div></div>`:'';
+  const summaryHtml=p.fight_summary?`<div class="card" style="margin-bottom:20px;"><div class="card-title">Fight Summary</div><div class="flag-detail-text" style="white-space:pre-wrap;">${p.fight_summary}</div></div>`:'';
   document.getElementById('matchupDetailTitle').textContent=(a.name||'—')+' vs '+(b.name||'—');
-  document.getElementById('matchupDetailBody').innerHTML=`<div class="matchup-grid">${col(a,aP)}${col(b,bP)}</div>${summaryHtml}`;
+  document.getElementById('matchupDetailBody').innerHTML=`${summaryHtml}<div class="matchup-grid">${col(a,aP)}${col(b,bP)}</div>`;
   openModal('matchupDetailModal');
 }
 
