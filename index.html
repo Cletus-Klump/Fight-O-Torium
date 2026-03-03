@@ -1064,7 +1064,7 @@ function renderPickCard(p) {
   const fighterLink = (f) => f ? `<span class="fighter-link" onclick="event.stopPropagation();goToFighter('${f.id}')">${f.name}</span>` : '—';
   const resultBadge = p.result
     ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'HIT':p.result==='L'?'MISS':'PASS'}</span>`
-    : `<span style="color:var(--text3);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
+    : `<span style="color:rgba(232,200,74,0.5);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
 
   return `<div class="pick-card" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
     <div class="pick-card-header">
@@ -1078,8 +1078,8 @@ function renderPickCard(p) {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         ${resultBadge}
-        <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
+        <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
         <button onclick="event.stopPropagation();deletePick('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
       </div>
     </div>
