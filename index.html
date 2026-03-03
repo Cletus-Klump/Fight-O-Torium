@@ -1651,7 +1651,11 @@ async function fetchOdds(forceRefresh=false) {
         const row = rows[0];
         const ageMs = now - new Date(row.fetched_at).getTime();
         const ageHrs = ageMs / (1000 * 60 * 60);
-        if (ageHrs < 24) {
+        const d = new Date();
+        const day = d.getDay(), hr = d.getHours();
+        // Hourly from Friday noon to Sunday 2am, otherwise 8hr
+        const ttl = (day===5&&hr>=12)||(day===6)||(day===0&&hr<2) ? 1 : 8;
+        if (ageHrs < ttl) {
           // Cache is fresh enough — use it
           const data = JSON.parse(row.data);
           oddsCache = data;
