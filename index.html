@@ -2807,28 +2807,43 @@ function normalizeUFCDivision(raw){
 }
 
 function parseUFCRankingsHTML(html){
+  const divisions={};
+
+  // Regex-based champion extraction — DOMParser mangles <div> inside <caption>
+  // so we extract champions from raw HTML first
+  const champMap={};
+  const champRe=/rankings--athlete--champion[\s\S]*?<h4>([^<]+(?:<[^>]*>[^<]*)*)<\/h4>\s*<h5>\s*<a\s+href="\/athlete\/([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  let cm;
+  while((cm=champRe.exec(html))!==null){
+    const rawDiv=cm[1].replace(/<[^>]*>/g,'').trim();
+    const slug=cm[2].replace(/\/$/,'');
+    const name=cm[3].trim();
+    const division=normalizeUFCDivision(rawDiv);
+    if(division)champMap[division]={name,slug};
+  }
+
+  // DOM-based extraction for ranked fighters (tables parse fine)
   const parser=new DOMParser();
   const doc=parser.parseFromString(html,'text/html');
-  const divisions={};
 
   const groupings=doc.querySelectorAll('.view-grouping');
   groupings.forEach(group=>{
-    // Get division name from header or champion h4
     const header=group.querySelector('.view-grouping-header');
-    const champH4=group.querySelector('.rankings--athlete--champion h4');
-    const rawDiv=champH4?.textContent||header?.textContent||'';
+    const rawDiv=header?.textContent||'';
     const division=normalizeUFCDivision(rawDiv);
     if(!division)return;
 
-    const divData={champion:null,ranked:[]};
+    const divData={champion:champMap[division]||null,ranked:[]};
 
-    // Parse champion
-    const champSection=group.querySelector('.rankings--athlete--champion');
-    if(champSection){
-      const champLink=champSection.querySelector('h5 a, .info a');
-      if(champLink){
-        const slug=champLink.getAttribute('href')?.replace(/^\/athlete\//,'').replace(/\/$/,'')||'';
-        divData.champion={name:champLink.textContent.trim(),slug};
+    // Also try DOM-based champion as fallback
+    if(!divData.champion){
+      const champSection=group.querySelector('.rankings--athlete--champion');
+      if(champSection){
+        const champLink=champSection.querySelector('h5 a, .info a');
+        if(champLink){
+          const slug=champLink.getAttribute('href')?.replace(/^\/athlete\//,'').replace(/\/$/,'')||'';
+          divData.champion={name:champLink.textContent.trim(),slug};
+        }
       }
     }
 
@@ -3128,11 +3143,11 @@ async function confirmUFCSync(){
   toast(`Synced ${merged+created} fighter${merged+created!==1?'s':''}, created ${created} new`,'success');
 }
 
-async function openUFCSyncModal(){
+async function openUFCSyncModal(forceRefresh=false){
   openModal('ufcSyncModal');
   document.getElementById('ufcSyncBody').innerHTML=`<div class="loading"><div class="spinner"></div>Fetching UFC rankings...</div>`;
   try{
-    const data=await fetchUFCRankings();
+    const data=await fetchUFCRankings(forceRefresh);
     const results=matchRankingsToFighters(data);
     if(!results.length){
       document.getElementById('ufcSyncBody').innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);padding:8px 0;">No rankings data found. Try again later.</div>`;
