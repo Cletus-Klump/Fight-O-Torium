@@ -1044,8 +1044,12 @@ function renderPickCard(p) {
   return `<div class="pick-card" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
     <div class="pick-card-header">
       <div style="flex:1;">
-        ${p.weight_class ? `<div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">${p.weight_class}</div>` : ''}
-        <div class="pick-fighters">${fighterLink(fA)}${fA&&fA.record?`<span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-left:6px;">(${fA.record})</span>`:''}<span style="color:var(--text3);font-size:14px;font-family:'Barlow',sans-serif;margin:0 8px;">vs</span>${fighterLink(fB)}${fB&&fB.record?`<span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-left:6px;">(${fB.record})</span>`:''}</div>
+        ${p.weight_class ? `<div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;text-align:center;">${p.weight_class}</div>` : ''}
+        <div class="pick-fighters" style="display:flex;align-items:flex-start;justify-content:center;gap:8px;">
+          <div style="text-align:center;">${fighterLink(fA)}${fA&&fA.record?`<div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;">${fA.record}</div>`:''}</div>
+          <span style="color:var(--text3);font-size:14px;font-family:'Barlow',sans-serif;padding-top:2px;">vs</span>
+          <div style="text-align:center;">${fighterLink(fB)}${fB&&fB.record?`<div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;">${fB.record}</div>`:''}</div>
+        </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         ${resultBadge}
