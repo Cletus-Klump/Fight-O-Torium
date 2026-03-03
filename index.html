@@ -1001,8 +1001,11 @@ async function saveFighter(){
   const data={name,weight_class:document.getElementById('f_weight_class').value||null,camp:document.getElementById('f_camp').value||null,age:document.getElementById('f_age').value?parseInt(document.getElementById('f_age').value):null,reach:document.getElementById('f_reach').value||null,nickname:document.getElementById('f_nickname').value||null,height:document.getElementById('f_height').value||null,record:document.getElementById('f_record').value||null,image_url:document.getElementById('f_image_url').value||null,flag_type:document.getElementById('f_flag_type').value||'NEUTRAL',flag_detail:document.getElementById('f_flag_detail').value||null,notes:document.getElementById('f_notes').value||null,updated_at:new Date().toISOString()};
   try{
     if(editingFighterId){
+      const prev=allFighters.find(x=>x.id===editingFighterId);
       await sbPatch('fighters',editingFighterId,data);
-      await sbPost('fighter_flags',{fighter_id:editingFighterId,flag_type:data.flag_type,flag_detail:data.flag_detail});
+      if(!prev||prev.flag_type!==data.flag_type||prev.flag_detail!==data.flag_detail){
+        await sbPost('fighter_flags',{fighter_id:editingFighterId,flag_type:data.flag_type,flag_detail:data.flag_detail});
+      }
       toast('Fighter updated','success');
     }else{
       await sbPost('fighters',data);
