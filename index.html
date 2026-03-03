@@ -600,8 +600,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 <!-- Matchup Detail Modal -->
 <div class="modal-overlay" id="matchupDetailModal">
   <div class="modal" style="width:900px;max-width:96vw;">
-    <div class="modal-header">
-      <div class="modal-title" id="matchupDetailTitle">Matchup Detail</div>
+    <div class="modal-header" style="border:none;justify-content:flex-end;">
       <button class="modal-close" onclick="closeModal('matchupDetailModal')">✕</button>
     </div>
     <div id="matchupDetailBody"></div>
@@ -1316,7 +1315,6 @@ function openMatchupDetail(pickId){
     </div>`;
   }
 
-  document.getElementById('matchupDetailTitle').textContent='Matchup Detail';
   document.getElementById('matchupDetailBody').innerHTML=html;
   openModal('matchupDetailModal');
 }
