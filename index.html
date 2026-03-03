@@ -1479,7 +1479,7 @@ function openMatchupDetail(pickId){
   let html=`
     <div class="tape-header">
       <div class="tape-header-title">${a.name} vs ${b.name}</div>
-      ${cardSub?`<div class="tape-header-sub">${cardSub}</div>`:''}
+      ${cardSub?`<div class="tape-header-sub" style="cursor:pointer;transition:color 0.15s" onclick="closeModal('matchupDetailModal');showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${p.card_id}')" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">${cardSub}</div>`:''}
     </div>
 
     <div class="tape-fighters">
