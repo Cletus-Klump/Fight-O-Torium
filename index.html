@@ -1340,15 +1340,6 @@ async function loadPicks(){
   allPicks=await sbGet('picks','order=sort_order.asc.nullsfirst,created_at.desc');
 }
 
-function updatePickOptions(){
-  const aId=document.getElementById('p_fighter_a').value,bId=document.getElementById('p_fighter_b').value;
-  const fA=allFighters.find(f=>f.id===aId),fB=allFighters.find(f=>f.id===bId);
-  const sel=document.getElementById('p_pick');
-  sel.innerHTML='<option value="">Select...</option><option value="PASS">PASS</option>';
-  if(fA)sel.innerHTML+=`<option value="${fA.id}">${fA.name}</option>`;
-  if(fB)sel.innerHTML+=`<option value="${fB.id}">${fB.name}</option>`;
-}
-
 // ---- MATCHUP DETAIL (Tale of the Tape) ----
 function tapeBar(leftVal, rightVal, leftNum, rightNum, label) {
   const total = (leftNum||0) + (rightNum||0);
@@ -1727,15 +1718,6 @@ function renderCardParlays() {
       </div>`;
     }).join('')}
   </div>`;
-}
-
-function renderCardPicksOnly() {
-  const picks = allPicks.filter(p => p.card_id === currentCardId);
-  if (!picks.length) {
-    document.getElementById('cardDetailPicks').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">No matchups yet — use "+ Add Matchup" or import a card</div></div>';
-    return;
-  }
-  document.getElementById('cardDetailPicks').innerHTML = picks.map(p => renderPickCard(p)).join('');
 }
 
 function renderFighterParlays(fighterId) {
