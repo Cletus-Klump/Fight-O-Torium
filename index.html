@@ -1086,7 +1086,6 @@ async function deleteFighter(id){
 async function loadCards(){
   allCards=await sbGet('cards','order=date.desc');
   rebuildIndexes();
-  populateCardSelects();
 }
 
 function renderCards(){
