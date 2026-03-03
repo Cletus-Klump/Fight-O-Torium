@@ -326,7 +326,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
       <input type="text" class="search-input" id="fighterSearch" placeholder="Search fighters..." oninput="onSearchInput()">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
       <button class="btn btn-primary btn-sm" onclick="openAddFighterModal()" style="margin-left:8px;">+ Add Fighter</button>
-      <button class="btn btn-secondary btn-sm" onclick="syncPhotos()" style="margin-left:4px;">📷 Sync Photos</button>
+      <button class="btn btn-secondary btn-sm" onclick="syncUFCData()" style="margin-left:4px;">🔄 Sync UFC Data</button>
       <span class="fighter-count-pill" id="fighterCountDisplay"></span>
     </div>
     <div class="fighters-body" id="fightersBody">
@@ -2437,60 +2437,98 @@ function fighterToSlug(name){
   return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 }
 
-async function syncPhotos(){
-  const missing=allFighters.filter(f=>!f.image_url);
-  if(!missing.length){toast('All fighters already have photos','success');return}
+async function syncUFCData(){
+  // Determine which fighters need any data
+  const candidates=allFighters.filter(f=>!f.image_url||!f.record||!f.nickname||!f.age);
+  if(!candidates.length){toast('All fighters fully synced','success');return}
 
-  // Set up progress modal using syncCardModal
   const titleEl=document.querySelector('#syncCardModal .modal-title');
   const prevTitle=titleEl.textContent;
-  titleEl.textContent='Sync Photos';
+  titleEl.textContent='Sync UFC Data';
   document.getElementById('syncCardBody').innerHTML=`
     <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
-      <div style="color:var(--accent);margin-bottom:12px;">Syncing photos from UFC.com...</div>
-      <div id="syncPhotoProgress" style="color:var(--text2);margin-bottom:6px;">0 / ${missing.length} fighters checked</div>
-      <div id="syncPhotoTally" style="color:var(--text2);margin-bottom:6px;">0 photos found · 0 not on UFC.com</div>
-      <div id="syncPhotoCurrent" style="color:var(--text3);"></div>
+      <div style="color:var(--accent);margin-bottom:12px;">Syncing data from UFC.com...</div>
+      <div id="syncProgress" style="color:var(--text2);margin-bottom:6px;">0 / ${candidates.length} fighters checked</div>
+      <div id="syncTally" style="color:var(--text2);margin-bottom:6px;"></div>
+      <div id="syncCurrent" style="color:var(--text3);"></div>
     </div>`;
   openModal('syncCardModal');
 
-  let found=0, notFound=0;
-  for(let i=0;i<missing.length;i++){
-    const f=missing[i];
-    document.getElementById('syncPhotoProgress').textContent=`${i+1} / ${missing.length} fighters checked`;
-    document.getElementById('syncPhotoCurrent').textContent=f.name;
+  let updated=0, notFound=0, stats={photo:0,record:0,nickname:0,age:0};
+  for(let i=0;i<candidates.length;i++){
+    const f=candidates[i];
+    document.getElementById('syncProgress').textContent=`${i+1} / ${candidates.length} fighters checked`;
+    document.getElementById('syncCurrent').textContent=f.name;
 
     try{
       const slug=fighterToSlug(f.name);
       const resp=await fetch(`https://api.codetabs.com/v1/proxy?quest=https://www.ufc.com/athlete/${slug}`);
       if(resp.ok){
         const html=await resp.text();
-        const match=html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-        if(match&&match[1]){
-          await sbPatch('fighters',f.id,{image_url:match[1]});
-          f.image_url=match[1];
-          found++;
+        const patch={};
+
+        // Photo
+        if(!f.image_url){
+          const m=html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+          if(m&&m[1]){patch.image_url=m[1];stats.photo++}
+        }
+        // Record
+        if(!f.record){
+          const m=html.match(/hero-profile__division-body[^>]*>\s*(\d+-\d+-\d+)/i);
+          if(m&&m[1]){patch.record=m[1];stats.record++}
+        }
+        // Nickname
+        if(!f.nickname){
+          const m=html.match(/hero-profile__nickname[^>]*>&quot;([^&]+)&quot;/i)||html.match(/hero-profile__nickname[^>]*>"([^"]+)"/i);
+          if(m&&m[1]){patch.nickname=m[1];stats.nickname++}
+        }
+        // Age from birthDate
+        if(!f.age){
+          const m=html.match(/"birthDate"\s*:\s*"(\d{4}-\d{2}-\d{2})"/);
+          if(m&&m[1]){
+            const born=new Date(m[1]);
+            const now=new Date();
+            let age=now.getFullYear()-born.getFullYear();
+            if(now<new Date(now.getFullYear(),born.getMonth(),born.getDate()))age--;
+            patch.age=age;stats.age++;
+          }
+        }
+
+        if(Object.keys(patch).length){
+          await sbPatch('fighters',f.id,patch);
+          Object.assign(f,patch);
+          updated++;
         }else{notFound++}
       }else{notFound++}
     }catch(e){notFound++}
 
-    document.getElementById('syncPhotoTally').textContent=`${found} photos found · ${notFound} not on UFC.com`;
-    if(i<missing.length-1) await new Promise(r=>setTimeout(r,500));
+    const parts=[];
+    if(stats.photo)parts.push(`${stats.photo} photos`);
+    if(stats.record)parts.push(`${stats.record} records`);
+    if(stats.nickname)parts.push(`${stats.nickname} nicknames`);
+    if(stats.age)parts.push(`${stats.age} ages`);
+    document.getElementById('syncTally').textContent=(parts.length?parts.join(' · '):'—')+` · ${notFound} not found`;
+    if(i<candidates.length-1) await new Promise(r=>setTimeout(r,500));
   }
 
   // Done state
+  const summary=[];
+  if(stats.photo)summary.push(`${stats.photo} photo${stats.photo!==1?'s':''}`);
+  if(stats.record)summary.push(`${stats.record} record${stats.record!==1?'s':''}`);
+  if(stats.nickname)summary.push(`${stats.nickname} nickname${stats.nickname!==1?'s':''}`);
+  if(stats.age)summary.push(`${stats.age} age${stats.age!==1?'s':''}`);
   document.getElementById('syncCardBody').innerHTML=`
     <div style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 0;">
       <div style="color:var(--green);margin-bottom:12px;">✓ Sync complete</div>
-      <div style="color:var(--text2);margin-bottom:4px;">${missing.length} fighters checked</div>
-      <div style="color:var(--text2);margin-bottom:4px;">${found} photos found</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${candidates.length} fighters checked</div>
+      <div style="color:var(--text2);margin-bottom:4px;">${updated} updated${summary.length?' — '+summary.join(', '):''}</div>
       <div style="color:var(--text2);margin-bottom:16px;">${notFound} not on UFC.com</div>
       <button class="btn btn-secondary" onclick="closeModal('syncCardModal')">Close</button>
     </div>`;
   titleEl.textContent=prevTitle;
 
   await loadFighters();
-  if(found) toast(`${found} fighter photo${found!==1?'s':''} synced from UFC.com`,'success');
+  if(updated) toast(`${updated} fighter${updated!==1?'s':''} updated from UFC.com`,'success');
 }
 
 init();
