@@ -191,37 +191,15 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
-/* PARLAY BUILDER */
-.parlay-builder{background:var(--bg2);border:1px solid var(--accent);border-radius:8px;margin-bottom:24px;overflow:hidden;}
-.parlay-builder-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(232,200,74,0.04);}
-.parlay-builder-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);}
-.parlay-builder-body{display:grid;grid-template-columns:1fr 320px;min-height:200px;}
-.parlay-legs-panel{border-right:1px solid var(--border);padding:16px;}
-.parlay-legs-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+/* PARLAY BUILDER MODAL */
 .parlay-pick-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;user-select:none;}
 .parlay-pick-row:hover{border-color:var(--border2);background:var(--bg3);}
 .parlay-pick-row.selected{border-color:var(--accent);background:rgba(232,200,74,0.06);}
 .parlay-pick-row.selected .parlay-leg-check{background:var(--accent);border-color:var(--accent);color:#000;}
-.parlay-pick-row.pass-pick{opacity:0.35;cursor:not-allowed;}
 .parlay-leg-check{width:18px;height:18px;border-radius:3px;border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all 0.15s;}
 .parlay-leg-fighter{flex:1;font-weight:600;font-size:13px;}
 .parlay-leg-meta{display:flex;gap:6px;align-items:center;flex-shrink:0;}
-.parlay-calc-panel{padding:20px;display:flex;flex-direction:column;gap:0;}
-.parlay-calc-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
-.parlay-odds-display{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:var(--accent);line-height:1;margin-bottom:4px;}
-.parlay-odds-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:16px;}
-.parlay-leg-summary{margin-bottom:16px;flex:1;}
-.parlay-leg-summary-item{padding:8px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:3px;}
-.parlay-leg-summary-item:last-child{border-bottom:none;}
-.parlay-leg-summary-name{font-size:12px;font-weight:600;}
-.parlay-leg-summary-detail{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
-.parlay-leg-failure{font-size:11px;color:var(--orange);font-style:italic;margin-top:2px;line-height:1.4;}
-.parlay-save-row{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--border);}
-.parlay-result-row{display:flex;gap:6px;margin-top:4px;}
-.parlay-result-btn{flex:1;padding:6px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;text-align:center;}
-.parlay-result-btn:hover{border-color:var(--border2);color:var(--text);}
-.parlay-result-btn.hit{border-color:var(--green);background:rgba(74,232,122,0.1);color:var(--green);}
-.parlay-result-btn.bust{border-color:var(--red);background:rgba(232,74,74,0.1);color:var(--red);}
+.parlay-odds-display{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;color:var(--accent);line-height:1;}
 .saved-parlays-section{margin-bottom:20px;}
 .saved-parlay-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:8px;}
 .saved-parlay-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -375,12 +353,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
           <button class="btn btn-secondary" onclick="openEditCardModal()" style="padding:8px 16px;">✏ Edit Card</button>
           <button class="btn btn-secondary" onclick="syncCard()" id="syncCardBtn" style="padding:8px 16px;">⟳ Sync Card</button>
           <button class="btn btn-secondary" onclick="openAddMatchupModal()" style="padding:8px 16px;">+ Add Matchup</button>
-          <button class="btn btn-secondary" onclick="toggleParlayBuilder()" id="parlayBuilderBtn" style="padding:8px 16px;">⚡ Parlay Builder</button>
+          <button class="btn btn-secondary" onclick="openParlayModal()" style="padding:8px 16px;">⚡ Parlay Builder</button>
         </div>
       </div>
       <div id="cardDetailStats" style="margin-bottom:20px;"></div>
-      <div id="parlayBuilderSection" style="display:none;"></div>
-      <div id="savedParlaysSection" style="display:none;"></div>
+      <div id="savedParlaysSection"></div>
       <div id="cardDetailPicks"></div>
     </div>
   </div>
@@ -462,6 +439,14 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="modal" style="max-width:640px;">
     <div class="modal-header"><div class="modal-title">Sync Card</div><button class="modal-close" onclick="closeModal('syncCardModal')">✕</button></div>
     <div id="syncCardBody"></div>
+  </div>
+</div>
+
+<!-- Parlay Builder Modal -->
+<div class="modal-overlay" id="parlayModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header"><div class="modal-title">⚡ Parlay Builder</div><button class="modal-close" onclick="closeModal('parlayModal')">✕</button></div>
+    <div id="parlayModalBody"></div>
   </div>
 </div>
 
@@ -599,7 +584,7 @@ const flagEmoji={ASCENDING:'🟢',DESCENDING:'🔴',FADING:'🔴',MONITOR:'🔵'
 
 async function init(){
   try{
-    await Promise.all([loadFighters(),loadCards(),loadPicks()]);
+    await Promise.all([loadFighters(),loadCards(),loadPicks(),loadParlays()]);
     setConn(true);
   }catch(e){setConn(false);toast('Connection error','error');console.error(e)}
   renderHome();
@@ -892,6 +877,7 @@ async function selectFighter(id){
         </table>`}
     </div>
     ${fh.length?`<div class="card"><div class="card-title">Flag History</div><table class="history-table"><thead><tr><th>Date</th><th>Flag</th><th>Detail</th></tr></thead><tbody>${fh.map(x=>`<tr><td style="color:var(--text3);white-space:nowrap;">${x.created_at?x.created_at.substring(0,10):'—'}</td><td>${x.flag_type?`<span class="flag-badge flag-${x.flag_type}">${x.flag_type}</span>`:'—'}</td><td style="color:var(--text2);">${x.flag_detail||'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${renderFighterParlays(id)}
   `;
 }
 
@@ -1054,6 +1040,7 @@ function showCardDetail(cardId){
       <div class="card"><div class="card-title">Passes</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:4px;">${pass}</div><div style="font-size:13px;color:var(--text2);">${card.notes||'No card notes'}</div></div>
     </div>`;
   currentCardId=cardId;
+  renderCardParlays();
   if(!picks.length){
     document.getElementById('cardDetailPicks').innerHTML='<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">No picks logged for this card</div></div>';
   } else {
@@ -1185,7 +1172,6 @@ function toast(msg,type='success'){
 
 // ---- PARLAY BUILDER ----
 let parlaySelectedIds = new Set();
-let parlayBuilderOpen = false;
 let allParlays = [];
 
 async function loadParlays() {
@@ -1211,20 +1197,13 @@ function calcParlayOdds(lines) {
   return decimalToAmerican(combined);
 }
 
-function toggleParlayBuilder() {
-  parlayBuilderOpen = !parlayBuilderOpen;
+function openParlayModal() {
   parlaySelectedIds = new Set();
-  const btn = document.getElementById('parlayBuilderBtn');
-  if (parlayBuilderOpen) {
-    btn.textContent = '✕ Close Builder';
-    btn.classList.add('btn-secondary');
-    renderParlayBuilder();
-    renderSavedParlays();
-  } else {
-    btn.textContent = '⚡ Parlay Builder';
-    document.getElementById('parlayBuilderSection').style.display = 'none';
-    document.getElementById('savedParlaysSection').style.display = 'none';
-  }
+  // Auto-populate with picks marked as parlay candidates
+  const picks = allPicks.filter(p => p.card_id === currentCardId && p.picked_fighter_id && p.line && p.parlay_candidate);
+  picks.forEach(p => parlaySelectedIds.add(p.id));
+  renderParlayModal();
+  openModal('parlayModal');
 }
 
 
@@ -1246,107 +1225,118 @@ function getParlayMeme(lines) {
   return null;
 }
 
-function renderParlayBuilder() {
-  const section = document.getElementById('parlayBuilderSection');
+function renderParlayModal() {
+  const body = document.getElementById('parlayModalBody');
   const picks = allPicks.filter(p => p.card_id === currentCardId);
   const playablePicks = picks.filter(p => p.picked_fighter_id && p.line);
+  const cardParlays = allParlays.filter(p => p.card_id === currentCardId);
 
-  section.innerHTML = `
-    <div class="parlay-builder">
-      <div class="parlay-builder-header">
-        <div class="parlay-builder-title">⚡ Parlay Builder</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">Click legs to add · Odds calculate live</div>
-      </div>
-      <div class="parlay-builder-body">
-        <div class="parlay-legs-panel">
-          <div class="parlay-legs-label">Available Legs — picks with lines</div>
-          ${!playablePicks.length
-            ? `<div style="color:var(--text3);font-size:13px;padding:12px 0;">No picks with lines logged yet. Add picks with a line to use the builder.</div>`
-            : playablePicks.map(p => {
-                const picked = allFighters.find(f => f.id === p.picked_fighter_id);
-                const fA = allFighters.find(f => f.id === p.fighter_a_id);
-                const fB = allFighters.find(f => f.id === p.fighter_b_id);
-                const isPass = !p.picked_fighter_id;
-                const isSelected = parlaySelectedIds.has(p.id);
-                const lp = p.line && p.line.startsWith('+');
-                const ln = p.line && p.line.startsWith('-');
-                return `<div class="parlay-pick-row ${isSelected ? 'selected' : ''} ${isPass ? 'pass-pick' : ''}"
-                  onclick="${isPass ? '' : `toggleParlayLeg('${p.id}')`}">
-                  <div class="parlay-leg-check">${isSelected ? '✓' : ''}</div>
-                  <div class="parlay-leg-fighter">
-                    <div>${picked ? picked.name : 'PASS'}</div>
-                    <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px;">
-                      ${fA ? fA.name : '?'} vs ${fB ? fB.name : '?'}
-                    </div>
-                  </div>
-                  <div class="parlay-leg-meta">
-                    ${p.line ? `<span class="line-display ${lp ? 'positive' : ln ? 'negative' : ''}" style="font-size:13px;">${p.line}</span>` : ''}
-                    ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
-                  </div>
-                </div>`;
-              }).join('')
-          }
-        </div>
-        <div class="parlay-calc-panel" id="parlayCalcPanel">
-          ${renderParlayCalc(playablePicks)}
-        </div>
-      </div>
-    </div>`;
-  section.style.display = 'block';
-}
+  // Saved parlays section
+  let savedHtml = '';
+  if (cardParlays.length) {
+    savedHtml = `<div style="margin-bottom:20px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Saved Parlays</div>
+      ${cardParlays.map(par => {
+        const legs = (par.legs || []).map(lid => picks.find(p => p.id === lid)).filter(Boolean);
+        const lines = legs.map(p => p.line).filter(Boolean);
+        const odds = lines.length >= 2 ? calcParlayOdds(lines) : par.odds;
+        const isPositive = odds && String(odds).startsWith('+');
+        const results = legs.map(p => p.result).filter(Boolean);
+        const allHit = results.length === legs.length && legs.length > 0 && results.every(r => r === 'W');
+        const anyMiss = results.some(r => r === 'L');
+        const status = allHit ? 'HIT' : anyMiss ? 'BUST' : 'PENDING';
+        const statusColor = allHit ? 'var(--green)' : anyMiss ? 'var(--red)' : 'var(--text3)';
+        return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-weight:600;font-size:14px;">${par.name || 'Untitled'}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${odds ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${isPositive ? 'var(--green)' : 'var(--accent)'};">${odds}</span>` : ''}
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${statusColor};letter-spacing:1px;">${status}</span>
+              <button onclick="deleteParlay('${par.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${legs.map(p => {
+              const picked = allFighters.find(f => f.id === p.picked_fighter_id);
+              const rc = p.result === 'W' ? 'var(--green)' : p.result === 'L' ? 'var(--red)' : 'var(--text2)';
+              return `<span class="parlay-leg-pill" style="color:${rc};border-color:${rc}40;">${picked ? picked.name : '?'} ${p.line || ''}</span>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="divider"></div>`;
+  }
 
-function renderParlayCalc(playablePicks) {
-  const selected = (playablePicks || allPicks.filter(p => p.card_id === currentCardId && p.picked_fighter_id && p.line))
-    .filter(p => parlaySelectedIds.has(p.id));
+  // Legs checkbox list
+  const selected = playablePicks.filter(p => parlaySelectedIds.has(p.id));
   const lines = selected.map(p => p.line).filter(Boolean);
   const odds = lines.length >= 2 ? calcParlayOdds(lines) : null;
   const isPositive = odds && odds.startsWith('+');
   const meme = lines.length >= 2 ? getParlayMeme(lines) : null;
 
-  return `
-    <div class="parlay-calc-title">Live Calculation</div>
-    <div class="parlay-odds-display" style="color:${odds ? (isPositive ? 'var(--green)' : 'var(--accent)') : 'var(--text3)'};">
-      ${odds || (parlaySelectedIds.size < 2 ? '—' : 'N/A')}
-    </div>
-    <div class="parlay-odds-sub">${parlaySelectedIds.size} leg${parlaySelectedIds.size !== 1 ? 's' : ''} selected${odds ? ' · ' + parlaySelectedIds.size + '-leg parlay' : parlaySelectedIds.size < 2 ? ' · select 2+ to calculate' : ''}</div>
-    ${meme ? `
-    <div style="text-align:center;margin:14px 0 4px;border-top:1px solid var(--border);padding-top:14px;">
-      <img src="${meme.src}" alt="${meme.label}" style="max-width:160px;max-height:160px;border-radius:8px;display:block;margin:0 auto 8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);">${meme.label}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px;line-height:1.4;">${meme.caption}</div>
-    </div>` : ''}
-    <div class="parlay-leg-summary" id="parlayLegSummary">
-      ${selected.map(p => {
+  let legsHtml = '';
+  if (!playablePicks.length) {
+    legsHtml = `<div style="color:var(--text3);font-size:13px;padding:16px 0;">No picks with lines logged yet. Add picks with a line to build parlays.</div>`;
+  } else {
+    legsHtml = `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Select Legs</div>
+    <div style="max-height:400px;overflow-y:auto;margin-bottom:16px;">
+      ${playablePicks.map(p => {
         const picked = allFighters.find(f => f.id === p.picked_fighter_id);
-        return `<div class="parlay-leg-summary-item">
-          <div class="parlay-leg-summary-name">${picked ? picked.name : '—'} <span style="color:var(--text3);font-weight:400;">${p.line || ''}</span></div>
-          <div class="parlay-leg-summary-detail">${p.confidence || ''} ${p.result ? '· <span style="color:' + (p.result==='W'?'var(--green)':'var(--red)') + ';">' + (p.result==='W'?'HIT':'MISS') + '</span>' : '· pending'}</div>
-          ${p.failure_mode ? `<div class="parlay-leg-failure">⚠ ${p.failure_mode}</div>` : ''}
+        const fA = allFighters.find(f => f.id === p.fighter_a_id);
+        const fB = allFighters.find(f => f.id === p.fighter_b_id);
+        const isSelected = parlaySelectedIds.has(p.id);
+        const lp = p.line && p.line.startsWith('+');
+        const ln = p.line && p.line.startsWith('-');
+        return `<div class="parlay-pick-row ${isSelected ? 'selected' : ''}"
+          onclick="toggleParlayLeg('${p.id}')">
+          <div class="parlay-leg-check">${isSelected ? '✓' : ''}</div>
+          <div class="parlay-leg-fighter">
+            <div>${picked ? picked.name : '?'}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px;">
+              ${fA ? fA.name : '?'} vs ${fB ? fB.name : '?'}
+            </div>
+          </div>
+          <div class="parlay-leg-meta">
+            ${p.line ? `<span class="line-display ${lp ? 'positive' : ln ? 'negative' : ''}" style="font-size:13px;">${p.line}</span>` : ''}
+            ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
+          </div>
         </div>`;
-      }).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px 0;">Select legs from the left to build your parlay.</div>'}
-    </div>
-    ${parlaySelectedIds.size >= 2 ? `
-    <div class="parlay-save-row">
-      <input type="text" class="form-input" id="parlayNameInput" placeholder='Name this parlay... e.g. "Parlay A"' style="font-size:13px;">
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="saveParlayToCard()">Save Parlay</button>
+      }).join('')}
+    </div>`;
+  }
+
+  // Live odds + meme + save
+  let oddsHtml = '';
+  if (playablePicks.length) {
+    oddsHtml = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+      <div>
+        <div class="parlay-odds-display" style="color:${odds ? (isPositive ? 'var(--green)' : 'var(--accent)') : 'var(--text3)'};">
+          ${odds || '—'}
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">${parlaySelectedIds.size} leg${parlaySelectedIds.size !== 1 ? 's' : ''} selected${parlaySelectedIds.size < 2 ? ' · select 2+ to calculate' : ''}</div>
       </div>
-      ${selected.some(p => p.result) ? `
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:4px;">Quick Result</div>
-      <div class="parlay-result-row">
-        <div class="parlay-result-btn ${selected.every(p => p.result === 'W') ? 'hit' : ''}"
-          onclick="markParlayQuickResult('HIT')">🟢 HIT</div>
-        <div class="parlay-result-btn ${selected.some(p => p.result === 'L') ? 'bust' : ''}"
-          onclick="markParlayQuickResult('BUST')">🔴 BUST</div>
+      ${meme ? `<div style="text-align:center;flex-shrink:0;">
+        <img src="${meme.src}" alt="${meme.label}" style="max-width:80px;max-height:80px;border-radius:6px;display:block;margin:0 auto 4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--accent);">${meme.label}</div>
       </div>` : ''}
-    </div>` : ''}`;
+    </div>`;
+
+    if (parlaySelectedIds.size >= 2) {
+      oddsHtml += `<div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:8px;">
+        <input type="text" class="form-input" id="parlayNameInput" placeholder='Name this parlay...' style="font-size:13px;flex:1;">
+        <button class="btn btn-primary" onclick="saveParlayToCard()">Save Parlay</button>
+      </div>`;
+    }
+  }
+
+  body.innerHTML = savedHtml + legsHtml + oddsHtml;
 }
 
 function toggleParlayLeg(pickId) {
   if (parlaySelectedIds.has(pickId)) parlaySelectedIds.delete(pickId);
   else parlaySelectedIds.add(pickId);
-  renderParlayBuilder();
-  renderSavedParlays();
+  renderParlayModal();
 }
 
 async function saveParlayToCard() {
@@ -1356,99 +1346,80 @@ async function saveParlayToCard() {
   if (selected.length < 2) { toast('Select at least 2 legs', 'error'); return; }
   const lines = selected.map(p => p.line).filter(Boolean);
   const odds = calcParlayOdds(lines);
-  const legNames = selected.map(p => {
-    const f = allFighters.find(x => x.id === p.picked_fighter_id);
-    return f ? f.name : p.id;
-  });
 
   try {
-    // Store in cards notes as a parlay record (using notes field as parlay storage)
-    // We'll use a dedicated approach: store in Supabase cards table notes or use picks notes
-    // Best approach: save as a special pick entry with parlay flag
-    const parlayData = {
+    await sbPost('parlays', {
       card_id: currentCardId,
-      fighter_a_id: selected[0].fighter_a_id,
-      fighter_b_id: selected[0].fighter_b_id,
-      picked_fighter_id: null,
-      line: odds,
-      confidence: 'Strong',
-      parlay_candidate: true,
-      notes: `PARLAY: ${name} | Legs: ${legNames.join(', ')} | Lines: ${lines.join(', ')} | Combined: ${odds}`,
-      weight_class: null,
+      name: name,
+      legs: selected.map(p => p.id),
+      odds: odds,
       result: null
-    };
-    // Tag each selected pick with a parlay identifier
-    const parlayTag = `[PARLAY:${name}]`;
+    });
     for (const p of selected) {
-      const newNotes = p.notes ? p.notes + ' ' + parlayTag : parlayTag;
-      await sbPatch('picks', p.id, { parlay_candidate: true, notes: newNotes });
+      await sbPatch('picks', p.id, { parlay_candidate: true });
     }
     toast(`Parlay "${name}" saved`, 'success');
-    await loadPicks();
-    renderSavedParlays();
-    renderCardPicksOnly();
+    await loadParlays();
+    parlaySelectedIds = new Set();
+    renderParlayModal();
+    renderCardParlays();
   } catch(e) { toast('Error saving parlay: ' + e.message, 'error'); }
 }
 
-function markParlayQuickResult(result) {
-  toast(`Parlay marked as ${result} — update individual pick results to track`, result === 'HIT' ? 'success' : 'error');
+async function deleteParlay(id) {
+  if (!confirm('Delete this parlay?')) return;
+  try {
+    await sbDelete('parlays', id);
+    toast('Parlay deleted', 'success');
+    await loadParlays();
+    if (document.getElementById('parlayModal').classList.contains('open')) {
+      renderParlayModal();
+    }
+    renderCardParlays();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-function renderSavedParlays() {
+function renderCardParlays() {
   const section = document.getElementById('savedParlaysSection');
-  if (!parlayBuilderOpen) { section.style.display = 'none'; return; }
+  if (!section) return;
+  const cardParlays = allParlays.filter(p => p.card_id === currentCardId);
+  if (!cardParlays.length) { section.innerHTML = ''; return; }
   const picks = allPicks.filter(p => p.card_id === currentCardId);
-  // Find picks tagged with parlays
-  const parlayMap = {};
-  picks.forEach(p => {
-    if (!p.notes) return;
-    const matches = p.notes.match(/\[PARLAY:([^\]]+)\]/g);
-    if (!matches) return;
-    matches.forEach(m => {
-      const name = m.replace('[PARLAY:', '').replace(']', '');
-      if (!parlayMap[name]) parlayMap[name] = [];
-      parlayMap[name].push(p);
-    });
-  });
-  const parlayNames = Object.keys(parlayMap);
-  if (!parlayNames.length) { section.style.display = 'none'; return; }
 
-  section.innerHTML = `
-    <div class="saved-parlays-section">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Saved Parlays</div>
-      ${parlayNames.map(name => {
-        const legs = parlayMap[name];
-        const lines = legs.map(p => p.line).filter(Boolean);
-        const odds = lines.length >= 2 ? calcParlayOdds(lines) : null;
-        const isPositive = odds && odds.startsWith('+');
-        const results = legs.map(p => p.result).filter(Boolean);
-        const allHit = results.length === legs.length && results.every(r => r === 'W');
-        const anyMiss = results.some(r => r === 'L');
-        const status = allHit ? 'HIT' : anyMiss ? 'BUST' : results.length ? 'PARTIAL' : 'PENDING';
-        const statusColor = allHit ? 'var(--green)' : anyMiss ? 'var(--red)' : 'var(--text3)';
-        return `<div class="saved-parlay-card">
-          <div class="saved-parlay-header">
-            <div class="saved-parlay-name">${name}</div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              ${odds ? `<div class="saved-parlay-odds" style="color:${isPositive ? 'var(--green)' : 'var(--accent)'};">${odds}</div>` : ''}
-              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${statusColor};">${status}</div>
-            </div>
+  section.innerHTML = `<div class="saved-parlays-section">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Saved Parlays</div>
+    ${cardParlays.map(par => {
+      const legs = (par.legs || []).map(lid => picks.find(p => p.id === lid)).filter(Boolean);
+      const lines = legs.map(p => p.line).filter(Boolean);
+      const odds = lines.length >= 2 ? calcParlayOdds(lines) : par.odds;
+      const isPositive = odds && String(odds).startsWith('+');
+      const results = legs.map(p => p.result).filter(Boolean);
+      const allHit = results.length === legs.length && legs.length > 0 && results.every(r => r === 'W');
+      const anyMiss = results.some(r => r === 'L');
+      const status = allHit ? 'HIT' : anyMiss ? 'BUST' : 'PENDING';
+      const statusColor = allHit ? 'var(--green)' : anyMiss ? 'var(--red)' : 'var(--text3)';
+      return `<div class="saved-parlay-card">
+        <div class="saved-parlay-header">
+          <div class="saved-parlay-name">${par.name || 'Untitled'}</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${odds ? `<div class="saved-parlay-odds" style="color:${isPositive ? 'var(--green)' : 'var(--accent)'};">${odds}</div>` : ''}
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${statusColor};">${status}</div>
           </div>
-          <div class="saved-parlay-legs">
-            ${legs.map(p => {
-              const picked = allFighters.find(f => f.id === p.picked_fighter_id);
-              const res = p.result;
-              const rc = res === 'W' ? 'var(--green)' : res === 'L' ? 'var(--red)' : 'var(--text3)';
-              return `<div class="parlay-leg-pill" style="color:${rc};border-color:${rc}20;">
-                ${picked ? picked.name : '?'} ${p.line || ''} ${res ? '· ' + (res === 'W' ? 'HIT' : 'MISS') : ''}
-              </div>`;
-            }).join('')}
-          </div>
-          <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${legs.length} legs · ${results.length}/${legs.length} results in</div>
-        </div>`;
-      }).join('')}
-    </div>`;
-  section.style.display = 'block';
+        </div>
+        <div class="saved-parlay-legs">
+          ${legs.map(p => {
+            const picked = allFighters.find(f => f.id === p.picked_fighter_id);
+            const res = p.result;
+            const rc = res === 'W' ? 'var(--green)' : res === 'L' ? 'var(--red)' : 'var(--text3)';
+            return `<div class="parlay-leg-pill" style="color:${rc};border-color:${rc}20;">
+              ${picked ? picked.name : '?'} ${p.line || ''} ${res ? '· ' + (res === 'W' ? 'HIT' : 'MISS') : ''}
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${legs.length} legs · ${results.length}/${legs.length} results in</div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderCardPicksOnly() {
@@ -1458,6 +1429,51 @@ function renderCardPicksOnly() {
     return;
   }
   document.getElementById('cardDetailPicks').innerHTML = picks.map(p => renderPickCard(p)).join('');
+}
+
+function renderFighterParlays(fighterId) {
+  const fighterParlays = allParlays.filter(par => {
+    return (par.legs || []).some(lid => {
+      const pick = allPicks.find(p => p.id === lid);
+      return pick && pick.picked_fighter_id === fighterId;
+    });
+  });
+  if (!fighterParlays.length) return '';
+  return `<div class="card" style="margin-top:16px;">
+    <div class="card-title">Parlays (${fighterParlays.length})</div>
+    ${fighterParlays.map(par => {
+      const card = allCards.find(c => c.id === par.card_id);
+      const legs = (par.legs || []).map(lid => allPicks.find(p => p.id === lid)).filter(Boolean);
+      const lines = legs.map(p => p.line).filter(Boolean);
+      const odds = lines.length >= 2 ? calcParlayOdds(lines) : par.odds;
+      const isPositive = odds && String(odds).startsWith('+');
+      const results = legs.map(p => p.result).filter(Boolean);
+      const allHit = results.length === legs.length && legs.length > 0 && results.every(r => r === 'W');
+      const anyMiss = results.some(r => r === 'L');
+      const status = allHit ? 'HIT' : anyMiss ? 'BUST' : 'PENDING';
+      const statusColor = allHit ? 'var(--green)' : anyMiss ? 'var(--red)' : 'var(--text3)';
+      return `<div style="border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div>
+            <span style="font-weight:600;font-size:13px;">${par.name || 'Untitled'}</span>
+            ${card ? `<span style="font-size:11px;color:var(--text3);margin-left:8px;">${card.name}</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${odds ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${isPositive ? 'var(--green)' : 'var(--accent)'};">${odds}</span>` : ''}
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${statusColor};letter-spacing:1px;">${status}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          ${legs.map(p => {
+            const picked = allFighters.find(f => f.id === p.picked_fighter_id);
+            const isCurrent = p.picked_fighter_id === fighterId;
+            const rc = p.result === 'W' ? 'var(--green)' : p.result === 'L' ? 'var(--red)' : 'var(--text2)';
+            return `<span class="parlay-leg-pill" style="color:${rc};border-color:${isCurrent ? 'var(--accent)' : rc + '40'};${isCurrent ? 'font-weight:700;' : ''}">${picked ? picked.name : '?'} ${p.line || ''}</span>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 // ---- ODDS API ----
@@ -2065,20 +2081,19 @@ async function saveEditAnalysis() {
   const pickId = window._editingPickId;
   if (!pickId) return;
   const pick = document.getElementById('ea_pick').value;
-  if (!pick) { toast('Select your pick or PASS', 'error'); return; }
   const p = allPicks.find(x => x.id === pickId);
   const line = p?.line || '';
   const failureMode = document.getElementById('ea_failure_mode').value;
   const isDog = line && line.startsWith('+');
   const isBigFav = line && line.startsWith('-') && Math.abs(parseInt(line)) >= 200;
-  if (pick !== 'PASS' && (isDog || isBigFav) && !failureMode.trim()) {
+  if (pick && pick !== 'PASS' && (isDog || isBigFav) && !failureMode.trim()) {
     toast('Name the failure mode — required for dogs and -200+', 'error');
     document.getElementById('ea_failure_mode').focus();
     return;
   }
   try {
     await sbPatch('picks', pickId, {
-      picked_fighter_id: pick === 'PASS' ? null : pick,
+      picked_fighter_id: (!pick || pick === 'PASS') ? null : pick,
       confidence: document.getElementById('ea_confidence').value,
       parlay_candidate: document.getElementById('ea_parlay').value === 'true',
       failure_mode: failureMode || null,
