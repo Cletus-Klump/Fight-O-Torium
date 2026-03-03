@@ -114,6 +114,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .conf-Tossup{background:rgba(74,138,232,0.15);color:var(--blue)}
 .conf-Pass{background:rgba(255,255,255,0.05);color:var(--text3)}
 .parlay-tag{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(136,74,232,0.15);color:var(--purple);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:1px}
+.chip-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.chip-btn:hover{border-color:var(--accent);color:var(--text)}
+.chip-btn.active{background:rgba(232,200,74,0.1);border-color:var(--accent);color:var(--accent)}
 .result-W{color:var(--green);font-weight:700}
 .result-L{color:var(--red);font-weight:700}
 .result-P{color:var(--text3);font-weight:700}
@@ -526,14 +529,36 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div class="modal" style="max-width:500px;">
     <div class="modal-header"><div class="modal-title">My Pick</div><button class="modal-close" onclick="closeModal('editAnalysisModal')">✕</button></div>
     <div id="editAnalysisMatchupHeader" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;"></div>
+    <input type="hidden" id="ea_pick" value="">
+    <input type="hidden" id="ea_confidence" value="Lean">
+    <input type="hidden" id="ea_result" value="">
     <div class="form-grid">
-      <div class="form-grid form-grid-2">
-        <div class="form-field"><label class="form-label">Your Pick *</label><select class="form-select" id="ea_pick"><option value="">Select...</option><option value="PASS">PASS</option></select></div>
-        <div class="form-field"><label class="form-label">Confidence</label><select class="form-select" id="ea_confidence"><option value="Lean">Lean</option><option value="Strong Lean">Strong Lean</option><option value="Strong">Strong</option><option value="Toss-up">Toss-up</option></select></div>
+      <div class="form-field">
+        <label class="form-label">Your Pick *</label>
+        <div id="ea_pick_chips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
-      <div class="form-grid form-grid-2">
-        <div class="form-field"><label class="form-label">Parlay Candidate</label><select class="form-select" id="ea_parlay"><option value="false">No</option><option value="true">Yes</option></select></div>
-        <div class="form-field"><label class="form-label">Result</label><select class="form-select" id="ea_result"><option value="">Pending</option><option value="W">HIT (W)</option><option value="L">MISS (L)</option><option value="P">PASS</option></select></div>
+      <div class="form-field">
+        <label class="form-label">Confidence</label>
+        <div id="ea_conf_chips" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="chip-btn" data-val="Toss-up" onclick="setChip('ea_confidence','Toss-up',this)">Toss-up</button>
+          <button type="button" class="chip-btn" data-val="Lean" onclick="setChip('ea_confidence','Lean',this)">Lean</button>
+          <button type="button" class="chip-btn" data-val="Strong Lean" onclick="setChip('ea_confidence','Strong Lean',this)">Strong Lean</button>
+          <button type="button" class="chip-btn" data-val="Strong" onclick="setChip('ea_confidence','Strong',this)">Strong</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 8px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--text2);text-transform:uppercase;">
+          <input type="checkbox" id="ea_parlay" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"> Parlay Candidate
+        </label>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Result</label>
+        <div id="ea_result_chips" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="chip-btn" data-val="" onclick="setChip('ea_result','',this)">Pending</button>
+          <button type="button" class="chip-btn" data-val="W" onclick="setChip('ea_result','W',this)">HIT</button>
+          <button type="button" class="chip-btn" data-val="L" onclick="setChip('ea_result','L',this)">MISS</button>
+          <button type="button" class="chip-btn" data-val="P" onclick="setChip('ea_result','P',this)">PASS</button>
+        </div>
       </div>
       <div class="form-grid form-grid-2">
         <div class="form-field"><label class="form-label">Method</label><input type="text" class="form-input" id="ea_method" placeholder="KO, Sub, UD..."></div>
@@ -2191,6 +2216,12 @@ async function saveEditMatchup() {
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
+function setChip(hiddenId, val, btn) {
+  document.getElementById(hiddenId).value = val;
+  btn.parentElement.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
 function openEditAnalysisModal(pickId) {
   const p = allPicks.find(x => x.id === pickId);
   if (!p) return;
@@ -2198,19 +2229,31 @@ function openEditAnalysisModal(pickId) {
   const fA = allFighters.find(f => f.id === p.fighter_a_id);
   const fB = allFighters.find(f => f.id === p.fighter_b_id);
 
-  // Header showing the matchup
   document.getElementById('editAnalysisMatchupHeader').textContent = `${fA?.name || '?'} vs ${fB?.name || '?'}`;
 
-  // Pick options
-  const sel = document.getElementById('ea_pick');
-  sel.innerHTML = '<option value="">Select...</option><option value="PASS">PASS</option>';
-  if (fA) sel.innerHTML += `<option value="${fA.id}">${fA.name}</option>`;
-  if (fB) sel.innerHTML += `<option value="${fB.id}">${fB.name}</option>`;
-  sel.value = p.picked_fighter_id || '';
+  // Pick chips — fighter names + PASS
+  const pickChips = document.getElementById('ea_pick_chips');
+  pickChips.innerHTML = '';
+  if (fA) pickChips.innerHTML += `<button type="button" class="chip-btn${p.picked_fighter_id===fA.id?' active':''}" data-val="${fA.id}" onclick="setChip('ea_pick','${fA.id}',this)">${fA.name}</button>`;
+  if (fB) pickChips.innerHTML += `<button type="button" class="chip-btn${p.picked_fighter_id===fB.id?' active':''}" data-val="${fB.id}" onclick="setChip('ea_pick','${fB.id}',this)">${fB.name}</button>`;
+  pickChips.innerHTML += `<button type="button" class="chip-btn${!p.picked_fighter_id&&p.result==='P'?' active':''}" data-val="PASS" onclick="setChip('ea_pick','PASS',this)">PASS</button>`;
+  document.getElementById('ea_pick').value = p.picked_fighter_id || '';
 
+  // Confidence chips
   document.getElementById('ea_confidence').value = p.confidence || 'Lean';
-  document.getElementById('ea_parlay').value = p.parlay_candidate ? 'true' : 'false';
+  document.querySelectorAll('#ea_conf_chips .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === (p.confidence || 'Lean'));
+  });
+
+  // Parlay checkbox
+  document.getElementById('ea_parlay').checked = !!p.parlay_candidate;
+
+  // Result chips
   document.getElementById('ea_result').value = p.result || '';
+  document.querySelectorAll('#ea_result_chips .chip-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === (p.result || ''));
+  });
+
   document.getElementById('ea_method').value = p.result_method || '';
   document.getElementById('ea_round').value = p.result_round || '';
   document.getElementById('ea_failure_mode').value = p.failure_mode || '';
@@ -2235,7 +2278,7 @@ async function saveEditAnalysis() {
     await sbPatch('picks', pickId, {
       picked_fighter_id: (!pick || pick === 'PASS') ? null : pick,
       confidence: document.getElementById('ea_confidence').value,
-      parlay_candidate: document.getElementById('ea_parlay').value === 'true',
+      parlay_candidate: document.getElementById('ea_parlay').checked,
       failure_mode: failureMode || null,
       result: document.getElementById('ea_result').value || null,
       result_method: document.getElementById('ea_method').value || null,
