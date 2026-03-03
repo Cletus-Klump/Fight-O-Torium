@@ -743,14 +743,30 @@ function showWCGrid(){
 function openWC(wc){
   currentWC=wc;
   selectedFighterId=null;
-  const fighters=allFighters.filter(f=>f.weight_class===wc).sort((a,b)=>a.name.localeCompare(b.name));
+  const fighters=allFighters.filter(f=>f.weight_class===wc).sort((a,b)=>a.name.split(' ').pop().localeCompare(b.name.split(' ').pop()));
   document.getElementById('panelWcLabel').textContent=wc;
-  document.getElementById('fighterListItems').innerHTML=fighters.map(f=>`
-    <div class="fighter-list-item" id="fli-${f.id}" onclick="selectFighter('${f.id}')">
+  document.getElementById('fighterListItems').innerHTML=fighters.map(f=>{
+    const fp=allPicks.filter(p=>p.picked_fighter_id===f.id&&p.result);
+    const w=fp.filter(p=>p.result==='W').length,l=fp.filter(p=>p.result==='L').length;
+    const rec=fp.length?`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);white-space:nowrap;">${w}W-${l}L</span>`:'';
+    return `<div class="fighter-list-item" id="fli-${f.id}" onclick="selectFighter('${f.id}')">
       <div class="fighter-list-name">${f.name}</div>
-      <span title="${f.flag_type||''}" style="font-size:12px;">${flagEmoji[f.flag_type]||''}</span>
-    </div>`).join('');
-  document.getElementById('fighterDetailPanel').innerHTML=`<div class="fighter-detail-empty"><div class="fighter-detail-empty-icon">🥊</div><div class="fighter-detail-empty-text">Select a fighter</div></div>`;
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${rec}
+        <span title="${f.flag_type||''}" style="font-size:12px;">${flagEmoji[f.flag_type]||''}</span>
+      </div>
+    </div>`;
+  }).join('');
+  const wcPicks=allPicks.filter(p=>p.result&&fighters.some(f=>f.id===p.picked_fighter_id));
+  const wcW=wcPicks.filter(p=>p.result==='W').length,wcL=wcPicks.filter(p=>p.result==='L').length;
+  document.getElementById('fighterDetailPanel').innerHTML=`<div class="fighter-detail-empty">
+    <div class="fighter-detail-empty-icon">🥊</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--text1);">${wc}</div>
+    ${wcPicks.length?`<div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2);margin-top:4px;">${wcW}W — ${wcL}L</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${wcPicks.length} pick${wcPicks.length!==1?'s':''} tracked</div>`
+    :`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:4px;">No picks tracked yet</div>`}
+    <div class="fighter-detail-empty-text" style="margin-top:12px;">Select a fighter</div>
+  </div>`;
   document.getElementById('wcGrid').style.display='none';
   document.getElementById('twoPanel').style.display='flex';
   document.getElementById('searchResults').style.display='none';
