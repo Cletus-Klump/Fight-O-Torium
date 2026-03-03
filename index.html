@@ -6,7 +6,7 @@
 <title>Fight-O-Torium</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Titan+One&family=JetBrains+Mono:wght@300;400;500;700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;--border:#2a2a2a;--border2:#333333;--text:#e8e8e8;--text2:#999999;--text3:#555555;--accent:#e8c84a;--accent2:#c4a832;--red:#e84a4a;--green:#4ae87a;--blue:#4a8ae8;--orange:#e8884a;--purple:#884ae8}
+:root{--bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;--border:#2a2a2a;--border2:#333333;--text:#e8e8e8;--text2:#999999;--text3:#555555;--accent:#e8c84a;--accent2:#c4a832;--red:#e84a4a;--green:#4ae87a;--blue:#4a8ae8;--orange:#e8884a;--purple:#884ae8;--gold:#d4a843;--gold-dim:rgba(212,168,67,0.15);--gold-border:rgba(212,168,67,0.4);--bmf-silver:#aaa;--bmf-red:#cc2222;--flame-orange:#ff6b2b;--flame-red:#e84a4a}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;overflow-x:hidden}
 
@@ -251,19 +251,83 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .parlay-leg-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--text2);}
 
 /* HOME PAGE */
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
-.home-hero{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 32px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
-.home-hero:hover{border-color:var(--accent);background:var(--bg3)}
-.home-hero-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-.home-hero-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:1.1;margin-bottom:8px}
-.home-hero-meta{font-size:13px;color:var(--text2);line-height:1.6}
-.home-hero-arrow{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--accent);opacity:0;transition:opacity 0.15s}
-.home-hero:hover .home-hero-arrow{opacity:1}
-.home-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;transition:all 0.15s}
-.home-card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
-.home-record{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px}
-.home-record-meta{font-size:13px;color:var(--text2);margin-top:6px}
+.home-top-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.home-card-block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
+.home-card-block:hover{border-color:var(--accent);background:var(--bg3)}
+.home-card-block-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.home-card-block-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;line-height:1.1;margin-bottom:6px}
+.home-card-block-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--text2);margin-bottom:4px}
+.home-card-block-meta{font-size:12px;color:var(--text3);line-height:1.5}
+.home-card-block-arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--accent);opacity:0;transition:opacity 0.15s}
+.home-card-block:hover .home-card-block-arrow{opacity:1}
+.home-record{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-top:8px}
 .home-placeholder{color:var(--text3);font-size:13px;font-style:italic}
+
+/* Matchup base */
+.home-matchup{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;margin-bottom:16px;position:relative;overflow:hidden;transition:all 0.15s}
+.home-matchup-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.home-matchup-fighters{display:flex;align-items:center;justify-content:center;gap:24px}
+.home-matchup-fighter{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.home-matchup-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--border2);cursor:pointer;transition:all 0.15s;background:var(--bg3)}
+.home-matchup-photo:hover{border-color:var(--accent);transform:scale(1.08)}
+.home-matchup-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:color 0.15s}
+.home-matchup-name:hover{color:var(--accent)}
+.home-matchup-vs{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:2px;flex-shrink:0}
+.home-matchup-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:12px;letter-spacing:1px;text-align:center}
+.home-matchup-clickzone{position:absolute;inset:0;cursor:pointer;z-index:0}
+
+/* Size variants */
+.home-matchup--large{padding:32px 40px}
+.home-matchup--large .home-matchup-photo{width:100px;height:100px}
+.home-matchup--large .home-matchup-name{font-size:28px}
+.home-matchup--large .home-matchup-vs{font-size:13px}
+.home-matchup--standard .home-matchup-photo{width:72px;height:72px}
+.home-matchup--standard .home-matchup-name{font-size:20px}
+
+/* Division Title treatment */
+.home-matchup--title-division{border:2px solid var(--gold-border);background:linear-gradient(135deg,var(--bg2) 0%,var(--gold-dim) 100%);position:relative}
+.home-matchup--title-division .home-matchup-label{color:var(--gold)}
+.home-matchup--title-division .home-matchup-vs{color:var(--gold)}
+.home-matchup--title-division .home-matchup-photo{border-color:var(--gold-border)}
+.home-matchup--title-division .hm-corner{position:absolute;width:24px;height:24px;pointer-events:none}
+.home-matchup--title-division .hm-corner--tl{top:0;left:0;border-top:2px solid var(--gold);border-left:2px solid var(--gold);border-radius:10px 0 0 0}
+.home-matchup--title-division .hm-corner--tr{top:0;right:0;border-top:2px solid var(--gold);border-right:2px solid var(--gold);border-radius:0 10px 0 0}
+.home-matchup--title-division .hm-corner--bl{bottom:0;left:0;border-bottom:2px solid var(--gold);border-left:2px solid var(--gold);border-radius:0 0 0 10px}
+.home-matchup--title-division .hm-corner--br{bottom:0;right:0;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);border-radius:0 0 10px 0}
+
+/* BMF Title treatment */
+.home-matchup--title-bmf{border:2px dashed var(--bmf-silver);background:linear-gradient(135deg,var(--bg2) 0%,rgba(204,34,34,0.08) 100%)}
+.home-matchup--title-bmf .home-matchup-label{color:var(--bmf-silver)}
+.home-matchup--title-bmf .home-matchup-vs{color:var(--bmf-red)}
+.home-matchup--title-bmf .home-matchup-name{text-shadow:0 0 8px rgba(204,34,34,0.3)}
+
+/* Main Event non-title treatment */
+.home-matchup--main-nontitle .home-matchup-label{color:var(--gold);border-bottom:1px solid var(--gold-border);padding-bottom:8px;margin-bottom:16px}
+
+/* Hot Matchup non-title treatment */
+.home-matchup--hot-nontitle{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,var(--flame-orange),var(--flame-red))}
+.home-matchup--hot-nontitle .home-matchup-label{color:var(--flame-orange)}
+.home-matchup--hot-nontitle .home-matchup-vs{color:var(--flame-orange)}
+.home-matchup--hot-nontitle .home-matchup-label .hm-label-text{animation:flameGlow 2s ease-in-out infinite}
+
+/* Hot Title treatment (combo) */
+.home-matchup--hot-title{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,var(--gold),var(--flame-orange),var(--flame-red))}
+.home-matchup--hot-title .home-matchup-label{background:linear-gradient(90deg,var(--gold),var(--flame-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.home-matchup--hot-title .home-matchup-vs{color:var(--gold)}
+.home-matchup--hot-title .home-matchup-photo{border-color:var(--gold-border)}
+.home-matchup--hot-title .home-matchup-label .hm-label-text{animation:flameGlow 2s ease-in-out infinite}
+
+@keyframes flameGlow{0%,100%{text-shadow:0 0 4px rgba(255,107,43,0.4)}50%{text-shadow:0 0 12px rgba(255,107,43,0.7),0 0 20px rgba(232,74,74,0.3)}}
+
+/* Home responsive */
+@media(max-width:720px){
+.home-top-row{grid-template-columns:1fr}
+.home-matchup-fighters{flex-direction:column;gap:12px}
+.home-matchup--large .home-matchup-photo{width:80px;height:80px}
+.home-matchup--large .home-matchup-name{font-size:22px}
+.home-matchup--large{padding:24px 20px}
+.home-matchup--standard{padding:20px 16px}
+}
 .wc-champ-img{width:70px;height:70px;object-fit:cover;object-position:top;border-radius:6px;background:var(--bg3);flex-shrink:0}
 .wc-champ-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;margin-top:2px}
 .wc-champ-vacant{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px;font-style:italic}
@@ -522,6 +586,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
         <div class="form-field"><label class="form-label">Weight Class</label><select class="form-select" id="em_weight_class"><option value="">Select...</option><option>Strawweight</option><option>Flyweight</option><option>Bantamweight</option><option>Featherweight</option><option>Lightweight</option><option>Welterweight</option><option>Middleweight</option><option>Light Heavyweight</option><option>Heavyweight</option><option>Women's Strawweight</option><option>Women's Flyweight</option><option>Women's Bantamweight</option><option>Women's Featherweight</option></select></div>
         <div class="form-field"><label class="form-label">Line (Fighter A)</label><input type="text" class="form-input" id="em_line" placeholder="e.g. -165"><div id="em_odds_status" style="font-size:10px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace;"></div></div>
       </div>
+      <div class="form-grid form-grid-2">
+        <div class="form-field"><label class="form-label">Title Fight</label>
+          <select class="form-select" id="em_title_fight"><option value="">No</option><option value="true">Yes</option></select></div>
+        <div class="form-field"><label class="form-label">Title Type</label>
+          <select class="form-select" id="em_title_type"><option value="">N/A</option><option value="DIVISION">Division Title</option><option value="BMF">BMF Title</option></select></div>
+      </div>
       <div class="form-field"><label class="form-label">Notes</label><textarea class="form-textarea" id="em_notes" placeholder="Context, flags, matchup observations..."></textarea></div>
       <div class="form-field"><label class="form-label">Fight Summary</label><textarea class="form-textarea" id="em_fight_summary" placeholder="Paste fight analysis from card breakdown session..." style="min-height:120px;"></textarea></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
@@ -673,78 +743,108 @@ function renderHome(){
   const today=new Date();today.setHours(0,0,0,0);
   const upcoming=allCards.filter(c=>new Date(c.date+'T00:00:00')>=today).sort((a,b)=>new Date(a.date)-new Date(b.date));
   const past=allCards.filter(c=>new Date(c.date+'T00:00:00')<today).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  // SVG assets
+  const beltGold=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><rect x="2" y="8" width="20" height="8" rx="2" fill="none" stroke="#d4a843" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="#d4a843" stroke-width="1.5"/><path d="M2 10V8a2 2 0 012-2h2l1 2M22 10V8a2 2 0 00-2-2h-2l-1 2" stroke="#d4a843" stroke-width="1.5"/></svg>`;
+  const beltBMF=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><rect x="2" y="8" width="20" height="8" rx="2" fill="none" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="3" fill="none" stroke="#cc2222" stroke-width="1.5"/><path d="M2 10V8a2 2 0 012-2h2l1 2M22 10V8a2 2 0 00-2-2h-2l-1 2" stroke="#aaa" stroke-width="1.5"/></svg>`;
+  const flameIcon=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><path d="M12 2c0 4-4 6-4 10a4 4 0 008 0c0-4-4-6-4-10z" fill="none" stroke="#ff6b2b" stroke-width="1.5"/><path d="M12 12c0 2-1.5 3-1.5 4.5a1.5 1.5 0 003 0C13.5 15 12 14 12 12z" fill="#ff6b2b" opacity="0.6"/></svg>`;
+  const silhouette=`<svg width="100%" height="100%" viewBox="0 0 80 80" style="border-radius:50%;"><rect width="80" height="80" fill="#1a1a1a"/><circle cx="40" cy="30" r="14" fill="#333"/><ellipse cx="40" cy="68" rx="20" ry="18" fill="#333"/></svg>`;
+
+  function fightType(pick){
+    const isME=pick.main_event, isHM=pick.hot_matchup, isTitle=pick.title_fight, tType=pick.title_type;
+    if(isME && isTitle && tType==='BMF') return {variant:'title-bmf',size:'large',belt:beltBMF};
+    if(isME && isTitle && tType==='DIVISION') return {variant:'title-division',size:'large',belt:beltGold};
+    if(isME && isTitle) return {variant:'title-division',size:'large',belt:beltGold};
+    if(isME) return {variant:'main-nontitle',size:'large',belt:null};
+    if(isHM && isTitle) return {variant:'hot-title',size:'large',belt:beltGold};
+    if(isHM) return {variant:'hot-nontitle',size:'standard',belt:null};
+    return {variant:'main-nontitle',size:'standard',belt:null};
+  }
+
+  function renderMatchup(pick,label){
+    if(!pick){
+      return `<div class="home-matchup home-matchup--standard"><div class="home-matchup-label">${label}</div><div class="home-placeholder">Tag a fight as ${label}</div></div>`;
+    }
+    const ft=fightType(pick);
+    const fA=fightersById.get(pick.fighter_a_id), fB=fightersById.get(pick.fighter_b_id);
+    const navToFighterA=fA?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_a_id}')`:'';
+    const navToFighterB=fB?`showPage('fighters',document.querySelectorAll('.nav-btn')[1]);selectFighterFromSearch('${pick.fighter_b_id}')`:'';
+    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" onclick="event.stopPropagation();${navToFighterA}" alt="${fA?.name||''}" style="position:relative;z-index:2">` : `<div class="home-matchup-photo" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" onclick="event.stopPropagation();${navToFighterB}" alt="${fB?.name||''}" style="position:relative;z-index:2">` : `<div class="home-matchup-photo" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+
+    const isHot=ft.variant==='hot-nontitle'||ft.variant==='hot-title';
+    const labelIcon=ft.belt ? ft.belt+' ' : (isHot ? flameIcon+' ' : '');
+    const corners=ft.variant==='title-division' ? `<div class="hm-corner hm-corner--tl"></div><div class="hm-corner hm-corner--tr"></div><div class="hm-corner hm-corner--bl"></div><div class="hm-corner hm-corner--br"></div>` : '';
+
+    return `<div class="home-matchup home-matchup--${ft.size} home-matchup--${ft.variant}">
+      <div class="home-matchup-clickzone" onclick="openMatchupDetail('${pick.id}')"></div>
+      ${corners}
+      <div class="home-matchup-label" style="position:relative;z-index:1">${labelIcon}<span class="hm-label-text">${label}</span></div>
+      <div class="home-matchup-fighters" style="position:relative;z-index:1">
+        <div class="home-matchup-fighter">
+          ${photoA}
+          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterA}" style="position:relative;z-index:2">${fA?.name||'TBD'}</div>
+        </div>
+        <div class="home-matchup-vs">VS</div>
+        <div class="home-matchup-fighter">
+          ${photoB}
+          <div class="home-matchup-name" onclick="event.stopPropagation();${navToFighterB}" style="position:relative;z-index:2">${fB?.name||'TBD'}</div>
+        </div>
+      </div>
+      ${pick.weight_class ? `<div class="home-matchup-meta" style="position:relative;z-index:1">${pick.weight_class}${pick.line?' &middot; '+pick.line:''}</div>` : ''}
+    </div>`;
+  }
+
   let html='';
 
-  // This Week's Card (hero)
+  // Top Row — This Week + Last Card side by side
+  html+='<div class="home-top-row">';
   if(upcoming.length){
     const card=upcoming[0];
     const d=new Date(card.date+'T00:00:00');
     const dayName=d.toLocaleDateString('en-US',{weekday:'long'});
     const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    html+=`<div class="home-hero" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
-      <div class="home-hero-label">This Week's Card</div>
-      <div class="home-hero-name">${card.name}</div>
-      <div class="home-hero-meta">${dayName}, ${dateStr}${card.venue?' · '+card.venue:''}</div>
-      <div class="home-hero-arrow">→</div>
+    const meCard=card;
+    const mePick=allPicks.find(p=>p.card_id===meCard.id&&p.main_event);
+    const meA=mePick?fightersById.get(mePick.fighter_a_id):null;
+    const meB=mePick?fightersById.get(mePick.fighter_b_id):null;
+    const meSub=meA&&meB?`${meA.name} vs ${meB.name}`:'';
+    html+=`<div class="home-card-block" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+      <div class="home-card-block-label">This Week's Card</div>
+      <div class="home-card-block-name">${card.name}</div>
+      ${meSub?`<div class="home-card-block-sub">${meSub}</div>`:''}
+      <div class="home-card-block-meta">${dayName}, ${dateStr}${card.venue?' &middot; '+card.venue:''}</div>
+      <div class="home-card-block-arrow">&rarr;</div>
     </div>`;
   } else {
-    html+=`<div class="home-card"><div class="home-card-title">This Week's Card</div><div class="home-placeholder">No upcoming cards</div></div>`;
+    html+=`<div class="home-card-block"><div class="home-card-block-label">This Week's Card</div><div class="home-placeholder">No upcoming cards</div></div>`;
   }
-
-  html+='<div class="home-grid">';
-
-  // Last Week's Record
   if(past.length){
     const card=past[0];
+    const d=new Date(card.date+'T00:00:00');
+    const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const cp=allPicks.filter(p=>p.card_id===card.id);
     const w=cp.filter(p=>p.result==='W').length,l=cp.filter(p=>p.result==='L').length,pass=cp.filter(p=>p.result==='P').length;
-    html+=`<div class="home-card" style="cursor:pointer;" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
-      <div class="home-card-title">Last Card</div>
-      <div class="home-record"><span class="result-W">${w}W</span> — <span class="result-L">${l}L</span> — <span class="result-P">${pass}P</span></div>
-      <div class="home-record-meta">${card.name}</div>
+    html+=`<div class="home-card-block" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+      <div class="home-card-block-label">Last Card</div>
+      <div class="home-card-block-name">${card.name}</div>
+      <div class="home-card-block-meta">${dateStr}${card.venue?' &middot; '+card.venue:''}</div>
+      <div class="home-record"><span class="result-W">${w}W</span> &mdash; <span class="result-L">${l}L</span> &mdash; <span class="result-P">${pass}P</span></div>
+      <div class="home-card-block-arrow">&rarr;</div>
     </div>`;
   } else {
-    html+=`<div class="home-card"><div class="home-card-title">Last Card</div><div class="home-placeholder">No past cards</div></div>`;
+    html+=`<div class="home-card-block"><div class="home-card-block-label">Last Card</div><div class="home-placeholder">No past cards</div></div>`;
   }
-
-  // Main Event — find tagged pick from upcoming card
-  const meCard = upcoming.length ? upcoming[0] : null;
-  const mePick = meCard ? allPicks.find(p => p.card_id === meCard.id && p.main_event) : null;
-  if (mePick) {
-    const meA = fightersById.get(mePick.fighter_a_id);
-    const meB = fightersById.get(mePick.fighter_b_id);
-    const mePhotoA = meA?.image_url ? `<img src="${meA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    const mePhotoB = meB?.image_url ? `<img src="${meB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${mePick.id}')">
-      <div class="home-card-title">Main Event</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${mePhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meA?.name||'?'}</span></div>
-      <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
-      <div style="display:flex;align-items:center;gap:10px;">${mePhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${meB?.name||'?'}</span></div>
-      ${mePick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${mePick.weight_class}${mePick.line?' · '+mePick.line:''}</div>` : ''}
-    </div>`;
-  } else {
-    html+=`<div class="home-card"><div class="home-card-title">Main Event</div><div class="home-placeholder">Tag a fight as Main Event</div></div>`;
-  }
-
-  // Hot Matchup — find tagged pick from upcoming card
-  const hmPick = meCard ? allPicks.find(p => p.card_id === meCard.id && p.hot_matchup) : null;
-  if (hmPick) {
-    const hmA = fightersById.get(hmPick.fighter_a_id);
-    const hmB = fightersById.get(hmPick.fighter_b_id);
-    const hmPhotoA = hmA?.image_url ? `<img src="${hmA.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    const hmPhotoB = hmB?.image_url ? `<img src="${hmB.image_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);">` : '';
-    html+=`<div class="home-card" style="cursor:pointer;" onclick="openMatchupDetail('${hmPick.id}')">
-      <div class="home-card-title">Hot Matchup</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">${hmPhotoA}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmA?.name||'?'}</span></div>
-      <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">VS</div>
-      <div style="display:flex;align-items:center;gap:10px;">${hmPhotoB}<span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;">${hmB?.name||'?'}</span></div>
-      ${hmPick.weight_class ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:1px;">${hmPick.weight_class}${hmPick.line?' · '+hmPick.line:''}</div>` : ''}
-    </div>`;
-  } else {
-    html+=`<div class="home-card"><div class="home-card-title">Hot Matchup</div><div class="home-placeholder">Tag a fight as Hot Matchup</div></div>`;
-  }
-
   html+='</div>';
+
+  // Main Event
+  const meCard=upcoming.length?upcoming[0]:null;
+  const mePick=meCard?allPicks.find(p=>p.card_id===meCard.id&&p.main_event):null;
+  html+=renderMatchup(mePick,'Main Event');
+
+  // Hot Matchup
+  const hmPick=meCard?allPicks.find(p=>p.card_id===meCard.id&&p.hot_matchup):null;
+  html+=renderMatchup(hmPick,'Hot Matchup');
 
   document.getElementById('homeContent').innerHTML=html;
 }
@@ -2300,6 +2400,8 @@ function openEditMatchupModal(pickId) {
   document.getElementById('em_line').value = p.line || '';
   document.getElementById('em_notes').value = p.notes || '';
   document.getElementById('em_fight_summary').value = p.fight_summary || '';
+  document.getElementById('em_title_fight').value = p.title_fight ? 'true' : '';
+  document.getElementById('em_title_type').value = p.title_type || '';
 
   // Show current DK odds
   const fA = fightersById.get(p.fighter_a_id);
@@ -2323,7 +2425,9 @@ async function saveEditMatchup() {
       weight_class: document.getElementById('em_weight_class').value || null,
       line: document.getElementById('em_line').value || null,
       notes: document.getElementById('em_notes').value || null,
-      fight_summary: document.getElementById('em_fight_summary').value || null
+      fight_summary: document.getElementById('em_fight_summary').value || null,
+      title_fight: document.getElementById('em_title_fight').value === 'true',
+      title_type: document.getElementById('em_title_type').value || null
     });
     toast('Matchup updated ✓', 'success');
     closeModal('editMatchupModal');
