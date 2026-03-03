@@ -1087,7 +1087,9 @@ async function selectFighter(id){
           ${f.nickname?`<div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);letter-spacing:2px;margin-bottom:4px;">"${f.nickname}"</div>`:''}
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             ${f.flag_type?`<span class="flag-badge flag-${f.flag_type}" style="font-size:11px;padding:3px 8px;">${f.flag_type}</span>`:''}
+            ${f.is_champion?`<span class="sync-champ-badge" style="font-size:10px;padding:2px 8px;">CHAMPION</span>`:''}
             ${f.weight_class?`<span style="color:var(--text2);font-size:14px;">${f.weight_class}</span>`:''}
+            ${f.ufc_ranking?`<span style="color:var(--text3);font-size:12px;font-family:'JetBrains Mono',monospace;">#${f.ufc_ranking} ranked</span>`:''}
           </div>
           <div class="fighter-meta-row">
             ${f.camp?`<div class="meta-item"><div class="meta-label">Camp</div><div class="meta-value">${f.camp}</div></div>`:''}
@@ -2776,9 +2778,13 @@ const UFC_DIVISION_MAP={
   'poids mi-lourds':'Light Heavyweight','poids lourds':'Heavyweight',
   'poids paille':'Strawweight',
   'poids mouche féminin':"Women's Flyweight",'poids mouche feminin':"Women's Flyweight",
+  'poids mouche féminins':"Women's Flyweight",'poids mouche feminins':"Women's Flyweight",
   'poids coq féminin':"Women's Bantamweight",'poids coq feminin':"Women's Bantamweight",
+  'poids coq féminins':"Women's Bantamweight",'poids coq feminins':"Women's Bantamweight",
   'poids paille féminin':"Women's Strawweight",'poids paille feminin':"Women's Strawweight",
+  'poids paille féminins':"Women's Strawweight",'poids paille feminins':"Women's Strawweight",
   'poids plume féminin':"Women's Featherweight",'poids plume feminin':"Women's Featherweight",
+  'poids plume féminins':"Women's Featherweight",'poids plume feminins':"Women's Featherweight",
   // With "Division" suffix
   'flyweight division':'Flyweight','bantamweight division':'Bantamweight',
   'featherweight division':'Featherweight','lightweight division':'Lightweight',
@@ -2799,11 +2805,14 @@ function normalizeUFCDivision(raw){
   // Try stripping "division" suffix
   const stripped=lower.replace(/\s*division\s*$/,'').trim();
   if(UFC_DIVISION_MAP[stripped])return UFC_DIVISION_MAP[stripped];
-  // Fuzzy: check if any key is a substring
+  // Fuzzy: check if any key is a substring — prefer longest match
+  let bestKey=null,bestVal=null;
   for(const[k,v]of Object.entries(UFC_DIVISION_MAP)){
-    if(lower.includes(k)||k.includes(lower))return v;
+    if((lower.includes(k)||k.includes(lower))&&(!bestKey||k.length>bestKey.length)){
+      bestKey=k;bestVal=v;
+    }
   }
-  return null;
+  return bestVal;
 }
 
 function parseUFCRankingsHTML(html){
