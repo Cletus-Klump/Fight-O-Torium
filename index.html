@@ -758,6 +758,7 @@ async function sbDelete(t,id){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}?
 async function sbDeleteWhere(t,filter){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}?${filter}`,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
 let allFighters=[],allCards=[],allPicks=[],selectedFighterId=null,editingFighterId=null,currentCardId=null,currentWC=null,expandedWC=null;
+let _restoring=false;
 let fightersById=new Map(),cardsById=new Map(),picksById=new Map();
 function rebuildIndexes(){fightersById=new Map(allFighters.map(f=>[f.id,f]));cardsById=new Map(allCards.map(c=>[c.id,c]));picksById=new Map(allPicks.map(p=>[p.id,p]));}
 
@@ -805,7 +806,46 @@ async function init(){
     setConn(true);
   }catch(e){setConn(false);toast('Connection error','error');console.error(e)}
   renderHome();
+  history.replaceState({page:'home'},'');
 }
+
+function navigateTo(state,replace=false){
+  if(_restoring) return;
+  if(replace) history.replaceState(state,'');
+  else history.pushState(state,'');
+}
+
+function restoreState(state){
+  if(!state) state={page:'home'};
+  const page=state.page||'home';
+  _restoring=true;
+  try{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const pageIdx={home:0,fighters:1,cards:2}[page]||0;
+    document.getElementById('page-'+page).classList.add('active');
+    document.querySelectorAll('.nav-btn')[pageIdx].classList.add('active');
+    if(page==='home'){renderHome();}
+    else if(page==='fighters'){
+      if(state.wc){
+        openWC(state.wc);
+        if(state.fighter) selectFighter(state.fighter);
+      } else {
+        showWCGrid();
+        if(state.expand) toggleWCExpand(state.expand);
+      }
+    } else if(page==='cards'){
+      renderCards();
+      if(state.card) showCardDetail(state.card);
+      else {
+        document.getElementById('cardsListView').style.display='block';
+        document.getElementById('cardsDetailView').style.display='none';
+      }
+    }
+  }finally{_restoring=false;}
+}
+
+window.addEventListener('popstate',e=>restoreState(e.state));
 
 function setConn(ok){
   document.getElementById('connDot').className='conn-dot '+(ok?'connected':'error');
@@ -879,7 +919,7 @@ function renderHome(){
     const meA=mePick?fightersById.get(mePick.fighter_a_id):null;
     const meB=mePick?fightersById.get(mePick.fighter_b_id):null;
     const meSub=meA&&meB?`${meA.name} vs ${meB.name}`:'';
-    html+=`<div class="home-card-block" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+    html+=`<div class="home-card-block" onclick="goToCard('${card.id}')">
       <div class="home-card-block-label">This Week's Card</div>
       <div class="home-card-block-name">${card.name}</div>
       ${meSub?`<div class="home-card-block-sub">${meSub}</div>`:''}
@@ -895,7 +935,7 @@ function renderHome(){
     const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const cp=allPicks.filter(p=>p.card_id===card.id);
     const w=cp.filter(p=>p.result==='W').length,l=cp.filter(p=>p.result==='L').length,pass=cp.filter(p=>p.result==='P').length;
-    html+=`<div class="home-card-block" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">
+    html+=`<div class="home-card-block" onclick="goToCard('${card.id}')">
       <div class="home-card-block-label">Last Card</div>
       <div class="home-card-block-name">${card.name}</div>
       <div class="home-card-block-meta">${dateStr}${card.venue?' &middot; '+card.venue:''}</div>
@@ -924,13 +964,16 @@ function showPage(page,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   btn.classList.add('active');
-  if(page==='home')renderHome();
-  if(page==='cards'){renderCards();document.getElementById('cardsListView').style.display='block';document.getElementById('cardsDetailView').style.display='none';}
-  if(page==='fighters'){
-    // reset to grid view if coming back
-    const search=document.getElementById('fighterSearch').value;
-    if(!search) showWCGrid();
-  }
+  const prev=_restoring;_restoring=true;
+  try{
+    if(page==='home')renderHome();
+    if(page==='cards'){renderCards();document.getElementById('cardsListView').style.display='block';document.getElementById('cardsDetailView').style.display='none';}
+    if(page==='fighters'){
+      const search=document.getElementById('fighterSearch').value;
+      if(!search) showWCGrid();
+    }
+  }finally{_restoring=prev;}
+  navigateTo({page});
 }
 
 // ---- FIGHTER LOADING ----
@@ -1002,6 +1045,7 @@ function toggleWCExpand(wc){
     const el=document.getElementById('wcExpanded_'+wc.replace(/[^a-zA-Z]/g,''));
     if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
   }
+  navigateTo({page:'fighters',expand:expandedWC||undefined},true);
 }
 
 function renderExpandedWCCard(wc,fighters,champ){
@@ -1087,8 +1131,12 @@ function renderExpandedFighterRow(f,rankLabel,escapedWC,silhouetteSm){
 
 function openWCAndSelect(wc,fighterId){
   expandedWC=null;
-  openWC(wc);
-  selectFighter(fighterId);
+  _restoring=true;
+  try{
+    openWC(wc);
+    selectFighter(fighterId);
+  }finally{_restoring=false;}
+  navigateTo({page:'fighters',wc,fighter:fighterId});
 }
 
 function showWCGrid(){
@@ -1098,6 +1146,7 @@ function showWCGrid(){
   expandedWC=null;
   currentWC=null;
   selectedFighterId=null;
+  navigateTo({page:'fighters'});
 }
 
 function openWC(wc){
@@ -1130,6 +1179,7 @@ function openWC(wc){
   document.getElementById('wcGrid').style.display='none';
   document.getElementById('twoPanel').style.display='flex';
   document.getElementById('searchResults').style.display='none';
+  navigateTo({page:'fighters',wc});
 }
 
 function backToGrid(){
@@ -1196,6 +1246,7 @@ function selectFighterFromSearch(id){
 // ---- FIGHTER DETAIL ----
 async function selectFighter(id){
   selectedFighterId=id;
+  navigateTo({page:'fighters',wc:currentWC,fighter:id},true);
   // Update list item highlights
   document.querySelectorAll('.fighter-list-item').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('fli-'+id);
@@ -1256,7 +1307,7 @@ async function selectFighter(id){
             const isPicked=p.picked_fighter_id===id;
             const resultLabel=p.result?(isPicked?(p.result==='W'?'HIT':'MISS'):(p.result==='W'?'MISS':'HIT')):'';
             return `<tr>
-            <td>${card?`<span class="fighter-link" onclick="showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${card.id}')">${card.name}</span>`:'—'}</td>
+            <td>${card?`<span class="fighter-link" onclick="goToCard('${card.id}')">${card.name}</span>`:'—'}</td>
             <td>${opp?`<span class="fighter-link" onclick="goToFighter('${opp.id}')">${opp.name}</span>`:'—'} <span style="cursor:pointer;color:var(--text3);font-size:11px;" onclick="openMatchupDetail('${p.id}')" title="View matchup">↗</span></td>
             <td>${picked?`<span style="color:var(--accent);font-weight:600;">${picked.name}</span>`:'<span style="color:var(--text3);">—</span>'}</td>
             <td><span class="line-display ${p.line&&p.line.startsWith('+')?'positive':p.line&&p.line.startsWith('-')?'negative':''}">${p.line||'—'}</span></td>
@@ -1273,12 +1324,17 @@ async function selectFighter(id){
 function goToFighter(id){
   const f=fightersById.get(id);
   if(!f)return;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-fighters').classList.add('active');
-  document.querySelectorAll('.nav-btn')[1].classList.add('active');
-  openWC(f.weight_class||'Unknown');
-  selectFighter(id);
+  const wc=f.weight_class||'Unknown';
+  _restoring=true;
+  try{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('page-fighters').classList.add('active');
+    document.querySelectorAll('.nav-btn')[1].classList.add('active');
+    openWC(wc);
+    selectFighter(id);
+  }finally{_restoring=false;}
+  navigateTo({page:'fighters',wc,fighter:id});
 }
 
 // ---- FIGHTER CRUD ----
@@ -1386,6 +1442,20 @@ function renderCards(){
 function showCardsList(){
   document.getElementById('cardsListView').style.display='block';
   document.getElementById('cardsDetailView').style.display='none';
+  navigateTo({page:'cards'});
+}
+
+function goToCard(cardId){
+  _restoring=true;
+  try{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('page-cards').classList.add('active');
+    document.querySelectorAll('.nav-btn')[2].classList.add('active');
+    renderCards();
+    showCardDetail(cardId);
+  }finally{_restoring=false;}
+  navigateTo({page:'cards',card:cardId});
 }
 
 function renderPickCard(p) {
@@ -1459,6 +1529,7 @@ function showCardDetail(cardId){
   }
   document.getElementById('cardsListView').style.display='none';
   document.getElementById('cardsDetailView').style.display='block';
+  navigateTo({page:'cards',card:cardId});
 }
 
 // ---- DRAG-AND-DROP REORDERING ----
@@ -1657,7 +1728,7 @@ function openMatchupDetail(pickId){
   let html=`
     <div class="tape-header">
       <div class="tape-header-title">${a.name} vs ${b.name}</div>
-      ${cardSub?`<div class="tape-header-sub" style="cursor:pointer;transition:color 0.15s" onclick="closeModal('matchupDetailModal');showPage('cards',document.querySelectorAll('.nav-btn')[2]);showCardDetail('${p.card_id}')" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">${cardSub}</div>`:''}
+      ${cardSub?`<div class="tape-header-sub" style="cursor:pointer;transition:color 0.15s" onclick="closeModal('matchupDetailModal');goToCard('${p.card_id}')" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">${cardSub}</div>`:''}
     </div>
 
     <div class="tape-fighters">
