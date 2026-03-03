@@ -470,6 +470,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
         <div class="form-field"><label class="form-label">Line (Fighter A)</label><input type="text" class="form-input" id="em_line" placeholder="e.g. -165"><div id="em_odds_status" style="font-size:10px;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace;"></div></div>
       </div>
       <div class="form-field"><label class="form-label">Notes</label><textarea class="form-textarea" id="em_notes" placeholder="Context, flags, matchup observations..."></textarea></div>
+      <div class="form-field"><label class="form-label">Fight Summary</label><textarea class="form-textarea" id="em_fight_summary" placeholder="Paste fight analysis from card breakdown session..." style="min-height:120px;"></textarea></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
         <button class="btn btn-secondary" onclick="closeModal('editMatchupModal')">Cancel</button>
         <button class="btn btn-primary" onclick="saveEditMatchup()">Save Matchup</button>
@@ -1145,8 +1146,9 @@ function openMatchupDetail(pickId){
     ${f.flag_detail?`<div class="card" style="margin-bottom:12px;"><div class="card-title">Flag Detail</div><div class="flag-detail-text">${f.flag_detail}</div></div>`:''}
     ${f.notes?`<div class="card"><div class="card-title">Notes</div><div class="flag-detail-text">${f.notes}</div></div>`:''}
   </div>`;
+  const summaryHtml=p.fight_summary?`<div class="card" style="margin-top:20px;"><div class="card-title">Fight Summary</div><div class="flag-detail-text" style="white-space:pre-wrap;">${p.fight_summary}</div></div>`:'';
   document.getElementById('matchupDetailTitle').textContent=(a.name||'—')+' vs '+(b.name||'—');
-  document.getElementById('matchupDetailBody').innerHTML=`<div class="matchup-grid">${col(a,aP)}${col(b,bP)}</div>`;
+  document.getElementById('matchupDetailBody').innerHTML=`<div class="matchup-grid">${col(a,aP)}${col(b,bP)}</div>${summaryHtml}`;
   openModal('matchupDetailModal');
 }
 
@@ -2012,6 +2014,7 @@ function openEditMatchupModal(pickId) {
   document.getElementById('em_weight_class').value = p.weight_class || '';
   document.getElementById('em_line').value = p.line || '';
   document.getElementById('em_notes').value = p.notes || '';
+  document.getElementById('em_fight_summary').value = p.fight_summary || '';
 
   // Show current DK odds
   const fA = allFighters.find(f => f.id === p.fighter_a_id);
@@ -2034,7 +2037,8 @@ async function saveEditMatchup() {
       fighter_a_id: fA, fighter_b_id: fB,
       weight_class: document.getElementById('em_weight_class').value || null,
       line: document.getElementById('em_line').value || null,
-      notes: document.getElementById('em_notes').value || null
+      notes: document.getElementById('em_notes').value || null,
+      fight_summary: document.getElementById('em_fight_summary').value || null
     });
     toast('Matchup updated ✓', 'success');
     closeModal('editMatchupModal');
