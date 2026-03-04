@@ -314,6 +314,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
 .home-matchup-vs{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:2px;flex-shrink:0}
 .home-matchup-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:12px;letter-spacing:1px;text-align:center}
+.home-matchup-event{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-top:10px;cursor:pointer;opacity:0.7;transition:opacity 0.15s}
+.home-matchup-event:hover{opacity:1;text-decoration:underline}
 
 /* Photo click */
 .home-matchup-photo{cursor:pointer}
@@ -939,9 +941,11 @@ function renderHome(){
     }
     const ft=fightType(pick);
     const fA=fightersById.get(pick.fighter_a_id), fB=fightersById.get(pick.fighter_b_id);
-    const photoClick=`onclick="event.stopPropagation();openMatchupDetail('${pick.id}')"`;
-    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" alt="${fA?.name||''}" ${photoClick}>` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;" ${photoClick}>${silhouette}</div>`;
-    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" alt="${fB?.name||''}" ${photoClick}>` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;" ${photoClick}>${silhouette}</div>`;
+    const photoA=fA?.image_url ? `<img class="home-matchup-photo" src="${fA.image_url}" alt="${fA?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const photoB=fB?.image_url ? `<img class="home-matchup-photo" src="${fB.image_url}" alt="${fB?.name||''}">` : `<div class="home-matchup-photo" style="display:flex;align-items:center;justify-content:center;">${silhouette}</div>`;
+    const card=cardsById.get(pick.card_id);
+    const eventName=card?.name||'';
+    const eventVenue=card?.venue||'';
 
     const isHot=ft.variant==='hot-nontitle'||ft.variant==='hot-title';
     const labelIcon=ft.belt ? ft.belt+' ' : (isHot ? flameIcon+' ' : '');
@@ -964,7 +968,7 @@ function renderHome(){
     // Variant class — non-title main events use size suffix
     const variantClass=ft.variant==='main-nontitle' ? `home-matchup--main-nontitle--${ft.size}` : `home-matchup--${ft.variant}`;
 
-    return `<div class="home-matchup ${variantClass}" onclick="goToCard('${pick.card_id}')" style="cursor:pointer">
+    return `<div class="home-matchup ${variantClass}" onclick="openMatchupDetail('${pick.id}')" style="cursor:pointer">
       ${corners}
       <div class="home-matchup-label">${labelIcon}<span class="hm-label-text">${label}</span></div>
       ${beltBadge}
@@ -980,6 +984,7 @@ function renderHome(){
         </div>
       </div>
       ${pick.weight_class ? `<div class="home-matchup-meta">${pick.weight_class}${pick.line?' &middot; '+pick.line:''}</div>` : ''}
+      ${eventName ? `<div class="home-matchup-event" onclick="event.stopPropagation();goToCard('${pick.card_id}')">${eventName}${eventVenue?' &middot; '+eventVenue:''}</div>` : ''}
     </div>`;
   }
 
