@@ -251,8 +251,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .tape-breakdown{position:relative;background:linear-gradient(135deg,#141414 0%,#1a1a1a 50%,#111 100%);border:1px solid #2a2a2a;border-radius:8px;padding:36px 40px 32px;margin-top:4px;font-family:Georgia,'Times New Roman',serif;font-size:1.1rem;line-height:1.75;color:#d4d0c8;white-space:pre-wrap;font-style:italic;letter-spacing:0.01em}
 .tape-breakdown::before{content:'\201C';position:absolute;top:8px;left:16px;font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:1;color:var(--accent);opacity:0.25;pointer-events:none}
 .tape-breakdown::after{content:'\201D';position:absolute;bottom:-12px;right:20px;font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:1;color:var(--accent);opacity:0.25;pointer-events:none}
-.tape-breakdown-attr{text-align:right;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);opacity:0.7}
-.tape-breakdown-attr::before{content:'';display:inline-block;width:24px;height:1px;background:var(--accent);vertical-align:middle;margin-right:8px;opacity:0.5}
+.tape-breakdown-attr{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);opacity:0.8}
+.tape-breakdown-attr::before{content:'';flex:0 0 24px;height:1px;background:var(--accent);opacity:0.5}
+.tape-breakdown-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:center 20%;border:2px solid var(--accent);opacity:0.85;flex-shrink:0}
 .tape-notes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .tape-notes .card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:16px}
 .tape-notes .card-title{margin-bottom:10px}
@@ -1894,7 +1895,7 @@ function openMatchupDetail(pickId){
   if(p.fight_summary){
     html+=`<div class="tape-section-title">The Breakdown</div>
     <div class="tape-breakdown">${p.fight_summary}</div>
-    <div class="tape-breakdown-attr">Cletus Klump</div>`;
+    <div class="tape-breakdown-attr"><img class="tape-breakdown-avatar" src="https://i.imgflip.com/1n81v7.jpg" alt="Cletus Klump">Cletus Klump</div>`;
   }
 
   if(a.notes||b.notes){
