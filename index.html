@@ -22,6 +22,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .conn-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
 .conn-dot.connected{background:var(--green)}
 .conn-dot.error{background:var(--red)}
+.orbit-spinner{width:20px;height:20px;position:relative;display:inline-block;vertical-align:middle}
+.orbit-spinner .orbit{position:absolute;inset:0;border-radius:50%;border:1px solid transparent;animation:orbitSpin 1.2s linear infinite}
+.orbit-spinner .orbit:nth-child(1){border-top-color:var(--green);animation-delay:0s}
+.orbit-spinner .orbit:nth-child(2){border-right-color:var(--green);animation-delay:0.1s}
+.orbit-spinner .orbit:nth-child(3){border-bottom-color:var(--green);animation-delay:0.2s}
+.orbit-spinner.error .orbit:nth-child(1){border-top-color:var(--red)}
+.orbit-spinner.error .orbit:nth-child(2){border-right-color:var(--red)}
+.orbit-spinner.error .orbit:nth-child(3){border-bottom-color:var(--red)}
+.orbit-spinner.connecting .orbit:nth-child(1){border-top-color:var(--text3)}
+.orbit-spinner.connecting .orbit:nth-child(2){border-right-color:var(--text3)}
+.orbit-spinner.connecting .orbit:nth-child(3){border-bottom-color:var(--text3)}
+.orbit-spinner.spinning-connected .orbit:nth-child(1){border-top-color:var(--green)}
+.orbit-spinner.spinning-connected .orbit:nth-child(2){border-right-color:var(--green)}
+.orbit-spinner.spinning-connected .orbit:nth-child(3){border-bottom-color:var(--green)}
+.orbit-spinner.connected .orbit{animation:none;border-color:transparent}
+.orbit-spinner.connected::after{content:'';position:absolute;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--green)}
+@keyframes orbitSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
 /* LAYOUT */
 .app{display:flex;flex-direction:column;height:calc(100vh - 56px)}
@@ -525,7 +542,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     <button class="nav-btn" onclick="showPage('fighters',this)">Fighters</button>
     <button class="nav-btn" onclick="showPage('cards',this)">Events</button>
   </nav>
-  <div class="conn-status"><div class="conn-dot" id="connDot"></div><span id="connLabel">connecting...</span></div>
+  <div class="conn-status"><div class="orbit-spinner connecting" id="connDot"><div class="orbit"></div><div class="orbit"></div><div class="orbit"></div></div><span id="connLabel">connecting...</span></div>
 </div>
 
 <div class="app">
@@ -957,8 +974,15 @@ function restoreState(state){
 window.addEventListener('popstate',e=>restoreState(e.state));
 
 function setConn(ok){
-  document.getElementById('connDot').className='conn-dot '+(ok?'connected':'error');
-  document.getElementById('connLabel').textContent=ok?'connected':'offline';
+  const dot=document.getElementById('connDot');
+  const label=document.getElementById('connLabel');
+  label.textContent=ok?'connected':'offline';
+  if(ok){
+    dot.className='orbit-spinner spinning-connected';
+    setTimeout(()=>{ dot.className='orbit-spinner connected'; },5000);
+  } else {
+    dot.className='orbit-spinner error';
+  }
 }
 
 function renderHome(){
