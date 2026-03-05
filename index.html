@@ -2009,7 +2009,7 @@ function toast(msg,type='success'){
 }
 
 // ---- PARLAY BUILDER ----
-let parlaySelectedIds = new Set();
+let parlaySelectedLegs = new Map(); // pickId → fighterId
 let allParlays = [];
 
 async function loadParlays() {
@@ -2035,11 +2035,22 @@ function calcParlayOdds(lines) {
   return decimalToAmerican(combined);
 }
 
+function getPickedLine(pick, fighterId) {
+  if (!pick.line) return null;
+  const n = parseInt(pick.line);
+  if (isNaN(n)) return pick.line;
+  if (fighterId === pick.fighter_a_id) return pick.line;
+  // Flip sign for fighter B
+  if (n > 0) return '-' + n;
+  if (n < 0) return '+' + Math.abs(n);
+  return pick.line;
+}
+
 function openParlayModal() {
-  parlaySelectedIds = new Set();
-  // Auto-populate with picks marked as parlay candidates
+  parlaySelectedLegs = new Map();
+  // Auto-populate with picks marked as parlay candidates that have a picked fighter and line
   const picks = allPicks.filter(p => p.card_id === currentCardId && p.picked_fighter_id && p.line && p.parlay_candidate);
-  picks.forEach(p => parlaySelectedIds.add(p.id));
+  picks.forEach(p => parlaySelectedLegs.set(p.id, p.picked_fighter_id));
   renderParlayModal();
   openModal('parlayModal');
 }
@@ -2066,7 +2077,6 @@ function getParlayMeme(lines) {
 function renderParlayModal() {
   const body = document.getElementById('parlayModalBody');
   const picks = allPicks.filter(p => p.card_id === currentCardId);
-  const playablePicks = picks.filter(p => p.picked_fighter_id && p.line);
   const cardParlays = allParlays.filter(p => p.card_id === currentCardId);
 
   // Saved parlays section
@@ -2076,7 +2086,9 @@ function renderParlayModal() {
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Saved Parlays</div>
       ${cardParlays.map(par => {
         const legs = (par.legs || []).map(lid => picks.find(p => p.id === lid)).filter(Boolean);
-        const lines = legs.map(p => p.line).filter(Boolean);
+        const lines = legs.map(p => {
+          return p.picked_fighter_id ? getPickedLine(p, p.picked_fighter_id) : p.line;
+        }).filter(Boolean);
         const odds = lines.length >= 2 ? calcParlayOdds(lines) : par.odds;
         const isPositive = odds && String(odds).startsWith('+');
         const results = legs.map(p => p.result).filter(Boolean);
@@ -2096,8 +2108,9 @@ function renderParlayModal() {
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
             ${legs.map(p => {
               const picked = fightersById.get(p.picked_fighter_id);
+              const line = p.picked_fighter_id ? getPickedLine(p, p.picked_fighter_id) : p.line;
               const rc = p.result === 'W' ? 'var(--green)' : p.result === 'L' ? 'var(--red)' : 'var(--text2)';
-              return `<span class="parlay-leg-pill" style="color:${rc};border-color:${rc}40;">${picked ? picked.name : '?'} ${p.line || ''}</span>`;
+              return `<span class="parlay-leg-pill" style="color:${rc};border-color:${rc}40;">${picked ? picked.name : '?'} ${line || ''}</span>`;
             }).join('')}
           </div>
         </div>`;
@@ -2106,97 +2119,147 @@ function renderParlayModal() {
     <div class="divider"></div>`;
   }
 
-  // Legs checkbox list
-  const selected = playablePicks.filter(p => parlaySelectedIds.has(p.id));
-  const lines = selected.map(p => p.line).filter(Boolean);
-  const odds = lines.length >= 2 ? calcParlayOdds(lines) : null;
+  // Fight list — show all picks on card
+  const legCount = parlaySelectedLegs.size;
+  const selectedLines = [];
+  for (const [pickId, fighterId] of parlaySelectedLegs) {
+    const p = picks.find(pk => pk.id === pickId);
+    if (p) {
+      const line = getPickedLine(p, fighterId);
+      if (line) selectedLines.push(line);
+    }
+  }
+  const odds = selectedLines.length >= 2 ? calcParlayOdds(selectedLines) : null;
   const isPositive = odds && odds.startsWith('+');
-  const meme = lines.length >= 2 ? getParlayMeme(lines) : null;
+  const meme = selectedLines.length >= 2 ? getParlayMeme(selectedLines) : null;
 
-  let legsHtml = '';
-  if (!playablePicks.length) {
-    legsHtml = `<div style="color:var(--text3);font-size:13px;padding:16px 0;">No picks with lines logged yet. Add picks with a line to build parlays.</div>`;
+  let fightListHtml = '';
+  if (!picks.length) {
+    fightListHtml = `<div style="color:var(--text3);font-size:13px;padding:16px 0;">No fights on this card yet.</div>`;
   } else {
-    legsHtml = `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Select Legs</div>
+    fightListHtml = `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Select Legs</div>
     <div style="max-height:400px;overflow-y:auto;margin-bottom:16px;">
-      ${playablePicks.map(p => {
-        const picked = fightersById.get(p.picked_fighter_id);
+      ${picks.map(p => {
         const fA = fightersById.get(p.fighter_a_id);
         const fB = fightersById.get(p.fighter_b_id);
-        const isSelected = parlaySelectedIds.has(p.id);
-        const lp = p.line && p.line.startsWith('+');
-        const ln = p.line && p.line.startsWith('-');
-        return `<div class="parlay-pick-row ${isSelected ? 'selected' : ''}"
-          onclick="toggleParlayLeg('${p.id}')">
-          <div class="parlay-leg-check">${isSelected ? '✓' : ''}</div>
-          <div class="parlay-leg-fighter">
-            <div>${picked ? picked.name : '?'}</div>
-            <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px;">
-              ${fA ? fA.name : '?'} vs ${fB ? fB.name : '?'}
+        const hasLine = !!p.line;
+        const lineA = hasLine ? p.line : null;
+        const lineB = hasLine ? getPickedLine(p, p.fighter_b_id) : null;
+        const selFighter = parlaySelectedLegs.get(p.id);
+        const aSelected = selFighter === p.fighter_a_id;
+        const bSelected = selFighter === p.fighter_b_id;
+        const lineApos = lineA && lineA.startsWith('+');
+        const lineAneg = lineA && lineA.startsWith('-');
+        const lineBpos = lineB && lineB.startsWith('+');
+        const lineBneg = lineB && lineB.startsWith('-');
+
+        if (!hasLine) {
+          return `<div style="display:flex;align-items:center;gap:0;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.4;cursor:not-allowed;">
+            <div style="flex:1;padding:10px 14px;text-align:right;">
+              <div style="font-weight:600;font-size:13px;color:var(--text2);">${fA ? fA.name : '?'}</div>
+            </div>
+            <div style="padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;">no line</div>
+            <div style="flex:1;padding:10px 14px;text-align:left;">
+              <div style="font-weight:600;font-size:13px;color:var(--text2);">${fB ? fB.name : '?'}</div>
+            </div>
+          </div>`;
+        }
+
+        return `<div style="display:flex;align-items:center;gap:0;margin-bottom:6px;border-radius:6px;overflow:hidden;">
+          <div onclick="toggleParlayLeg('${p.id}','${p.fighter_a_id}')" style="flex:1;padding:10px 14px;text-align:right;cursor:pointer;transition:all 0.15s;border:1px solid ${aSelected ? 'var(--accent)' : 'var(--border)'};border-radius:6px 0 0 6px;background:${aSelected ? 'rgba(232,200,74,0.08)' : 'transparent'};" onmouseover="if(!${aSelected})this.style.borderColor='var(--border2)';this.style.background='${aSelected ? 'rgba(232,200,74,0.12)' : 'var(--bg3)'}'" onmouseout="this.style.borderColor='${aSelected ? 'var(--accent)' : 'var(--border)'}';this.style.background='${aSelected ? 'rgba(232,200,74,0.08)' : 'transparent'}'">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+              <span style="font-weight:600;font-size:13px;${aSelected ? 'color:var(--accent);' : ''}">${fA ? fA.name : '?'}</span>
+              <span class="line-display ${lineApos ? 'positive' : lineAneg ? 'negative' : ''}" style="font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:700;">${lineA}</span>
             </div>
           </div>
-          <div class="parlay-leg-meta">
-            ${p.line ? `<span class="line-display ${lp ? 'positive' : ln ? 'negative' : ''}" style="font-size:13px;">${p.line}</span>` : ''}
-            ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
+          <div style="padding:4px 8px;font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;flex-shrink:0;user-select:none;">vs</div>
+          <div onclick="toggleParlayLeg('${p.id}','${p.fighter_b_id}')" style="flex:1;padding:10px 14px;text-align:left;cursor:pointer;transition:all 0.15s;border:1px solid ${bSelected ? 'var(--accent)' : 'var(--border)'};border-radius:0 6px 6px 0;background:${bSelected ? 'rgba(232,200,74,0.08)' : 'transparent'};" onmouseover="if(!${bSelected})this.style.borderColor='var(--border2)';this.style.background='${bSelected ? 'rgba(232,200,74,0.12)' : 'var(--bg3)'}'" onmouseout="this.style.borderColor='${bSelected ? 'var(--accent)' : 'var(--border)'}';this.style.background='${bSelected ? 'rgba(232,200,74,0.08)' : 'transparent'}'">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="line-display ${lineBpos ? 'positive' : lineBneg ? 'negative' : ''}" style="font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:700;">${lineB}</span>
+              <span style="font-weight:600;font-size:13px;${bSelected ? 'color:var(--accent);' : ''}">${fB ? fB.name : '?'}</span>
+            </div>
           </div>
         </div>`;
       }).join('')}
     </div>`;
   }
 
-  // Live odds + meme + save
-  let oddsHtml = '';
-  if (playablePicks.length) {
-    oddsHtml = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-      <div>
-        <div class="parlay-odds-display" style="color:${odds ? (isPositive ? 'var(--green)' : 'var(--accent)') : 'var(--text3)'};">
-          ${odds || '—'}
-        </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">${parlaySelectedIds.size} leg${parlaySelectedIds.size !== 1 ? 's' : ''} selected${parlaySelectedIds.size < 2 ? ' · select 2+ to calculate' : ''}</div>
-      </div>
-      ${meme ? `<div style="text-align:center;flex-shrink:0;">
-        <img src="${meme.src}" alt="${meme.label}" style="max-width:80px;max-height:80px;border-radius:6px;display:block;margin:0 auto 4px;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--accent);">${meme.label}</div>
+  // Live totals bar
+  let totalsHtml = '';
+  if (legCount >= 1) {
+    const payoutAmt = odds ? (() => {
+      const n = parseInt(odds);
+      if (n > 0) return 100 + n;
+      if (n < 0) return 100 + (10000 / Math.abs(n));
+      return 100;
+    })() : null;
+
+    totalsHtml = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text1);">${legCount} LEG${legCount !== 1 ? 'S' : ''}</div>
+      ${odds ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:${isPositive ? 'var(--green)' : 'var(--accent)'};line-height:1;">${odds}</div>` : `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);">select 2+ to calculate</div>`}
+      ${payoutAmt ? `<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);font-weight:700;margin-left:auto;">$100 PAYS $${payoutAmt.toFixed(2)}</div>` : ''}
+      ${meme ? `<div style="text-align:center;flex-shrink:0;margin-left:${payoutAmt ? '0' : 'auto'};">
+        <img src="${meme.src}" alt="${meme.label}" style="max-width:48px;max-height:48px;border-radius:4px;display:block;margin:0 auto 2px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--accent);">${meme.label}</div>
       </div>` : ''}
     </div>`;
-
-    if (parlaySelectedIds.size >= 2) {
-      oddsHtml += `<div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:8px;">
-        <input type="text" class="form-input" id="parlayNameInput" placeholder='Name this parlay...' style="font-size:13px;flex:1;">
-        <button class="btn btn-primary" onclick="saveParlayToCard()">Save Parlay</button>
-      </div>`;
-    }
   }
 
-  body.innerHTML = savedHtml + legsHtml + oddsHtml;
+  // Save row
+  let saveHtml = '';
+  if (legCount >= 2) {
+    saveHtml = `<div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:8px;">
+      <input type="text" class="form-input" id="parlayNameInput" placeholder='Name this parlay...' style="font-size:13px;flex:1;">
+      <button class="btn btn-primary" onclick="saveParlayToCard()">Save Parlay</button>
+    </div>`;
+  }
+
+  body.innerHTML = savedHtml + fightListHtml + totalsHtml + saveHtml;
 }
 
-function toggleParlayLeg(pickId) {
-  if (parlaySelectedIds.has(pickId)) parlaySelectedIds.delete(pickId);
-  else parlaySelectedIds.add(pickId);
+function toggleParlayLeg(pickId, fighterId) {
+  if (parlaySelectedLegs.get(pickId) === fighterId) parlaySelectedLegs.delete(pickId);
+  else parlaySelectedLegs.set(pickId, fighterId);
   renderParlayModal();
 }
 
 async function saveParlayToCard() {
   const name = document.getElementById('parlayNameInput')?.value.trim() || 'Untitled Parlay';
-  const picks = allPicks.filter(p => p.card_id === currentCardId && p.picked_fighter_id && p.line);
-  const selected = picks.filter(p => parlaySelectedIds.has(p.id));
-  if (selected.length < 2) { toast('Select at least 2 legs', 'error'); return; }
-  const lines = selected.map(p => p.line).filter(Boolean);
+  if (parlaySelectedLegs.size < 2) { toast('Select at least 2 legs', 'error'); return; }
+  const picks = allPicks.filter(p => p.card_id === currentCardId);
+  const legPickIds = [...parlaySelectedLegs.keys()];
+  const lines = [];
+  for (const [pickId, fighterId] of parlaySelectedLegs) {
+    const p = picks.find(pk => pk.id === pickId);
+    if (p) {
+      const line = getPickedLine(p, fighterId);
+      if (line) lines.push(line);
+    }
+  }
   const odds = calcParlayOdds(lines);
 
   try {
+    // Set picked_fighter_id on each leg's pick before saving the parlay
+    const patchPromises = [];
+    for (const [pickId, fighterId] of parlaySelectedLegs) {
+      const p = picks.find(pk => pk.id === pickId);
+      if (p) {
+        const patch = { parlay_candidate: true, picked_fighter_id: fighterId };
+        patchPromises.push(sbPatch('picks', p.id, patch));
+      }
+    }
+    await Promise.all(patchPromises);
     await sbPost('parlays', {
       card_id: currentCardId,
       name: name,
-      legs: selected.map(p => p.id),
+      legs: legPickIds,
       odds: odds,
       result: null
     });
-    await Promise.all(selected.map(p => sbPatch('picks', p.id, { parlay_candidate: true })));
+    await Promise.all(patchPromises);
     toast(`Parlay "${name}" saved`, 'success');
     await loadParlays();
-    parlaySelectedIds = new Set();
+    parlaySelectedLegs = new Map();
     renderParlayModal();
     renderCardParlays();
   } catch(e) { toast('Error saving parlay: ' + e.message, 'error'); }
