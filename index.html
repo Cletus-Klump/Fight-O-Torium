@@ -1973,6 +1973,7 @@ function openMatchupDetail(pickId){
 
     <div class="tape-section-title">Tale of the Tape</div>
     <table class="tape-table">
+      ${p.weight_class?tapeRow(p.weight_class, p.weight_class, 'CLASS', false):''}
       ${tapeRow(a.age||'—', b.age||'—', 'AGE', false)}
       ${tapeRow(a.record||'—', b.record||'—', 'RECORD', false)}
       ${tapeRow(a.height||'—', b.height||'—', 'HEIGHT', true)}
