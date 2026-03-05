@@ -1652,7 +1652,7 @@ function showCardDetail(cardId){
   const dogs=picks.filter(p=>p.line&&p.line.startsWith('+')&&p.result);
   const dogHits=dogs.filter(p=>p.result==='W').length;
   document.getElementById('cardDetailName').textContent=card.name;
-  document.getElementById('cardDetailMeta').textContent=card.date+(card.venue?' · '+card.venue:'');
+  document.getElementById('cardDetailMeta').textContent=card.date+(card.venue?' · '+card.venue:'')+(picks.length?' · '+picks.length+' fights':'');
   document.getElementById('cardDetailStats').innerHTML=`
     <div class="grid-3">
       <div class="card"><div class="card-title">Card Record</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:4px;"><span class="result-W">${w}</span> — <span class="result-L">${l}</span></div><div style="font-size:13px;color:var(--text2);">${pct}% hit rate${pending?' · '+pending+' pending':''}</div></div>
