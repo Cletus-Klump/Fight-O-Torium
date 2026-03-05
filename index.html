@@ -2258,7 +2258,7 @@ async function saveParlayToCard() {
     });
     await Promise.all(patchPromises);
     toast(`Parlay "${name}" saved`, 'success');
-    await loadParlays();
+    await Promise.all([loadParlays(), loadPicks()]);
     parlaySelectedLegs = new Map();
     renderParlayModal();
     renderCardParlays();
