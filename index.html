@@ -1903,15 +1903,15 @@ function tapeBar(leftVal, rightVal, leftNum, rightNum, label) {
   const total = (leftNum||0) + (rightNum||0);
   const lPct = total > 0 ? Math.round((leftNum/total)*100) : 50;
   const rPct = 100 - lPct;
-  const canHighlight = label !== 'AGE' && label !== 'RECORD';
-  const adv = canHighlight && leftNum > rightNum ? 'left' : canHighlight && rightNum > leftNum ? 'right' : '';
+  const adv = leftNum > rightNum ? 'left' : rightNum > leftNum ? 'right' : '';
+  const lDim = adv==='right', rDim = adv==='left';
   return `<div class="tape-stat-row">
-    <div class="tape-stat-val tape-stat-left" style="${adv==='left'?'color:rgba(232,74,74,0.9);text-shadow:0 0 8px rgba(232,74,74,0.3);':''}">${leftVal}</div>
+    <div class="tape-stat-val tape-stat-left" style="${adv==='left'?'color:rgba(232,74,74,0.9);text-shadow:0 0 8px rgba(232,74,74,0.3);':lDim?'opacity:0.45;':''}">${leftVal}</div>
     <div class="tape-bar">
-      <div class="tape-bar-left" style="width:${lPct}%${adv==='left'?';box-shadow:2px 0 8px rgba(232,74,74,0.4)':''}"></div>
-      <div class="tape-bar-right" style="width:${rPct}%${adv==='right'?';box-shadow:-2px 0 8px rgba(74,138,232,0.4)':''}"></div>
+      <div class="tape-bar-left" style="width:${lPct}%${lDim?';opacity:0.4':''}"></div>
+      <div class="tape-bar-right" style="width:${rPct}%${rDim?';opacity:0.4':''}"></div>
     </div>
-    <div class="tape-stat-val tape-stat-right" style="${adv==='right'?'color:rgba(74,138,232,0.9);text-shadow:0 0 8px rgba(74,138,232,0.3);':''}">${rightVal}</div>
+    <div class="tape-stat-val tape-stat-right" style="${adv==='right'?'color:rgba(74,138,232,0.9);text-shadow:0 0 8px rgba(74,138,232,0.3);':rDim?'opacity:0.45;':''}">${rightVal}</div>
     <div class="tape-stat-label">${label}</div>
   </div>`;
 }
@@ -1981,10 +1981,18 @@ function openMatchupDetail(pickId){
     </div>
 
     <div class="tape-section-title">Tale of the Tape</div>
-    ${tapeBar(a.age||'—', b.age||'—', aAge, bAge, 'AGE')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid var(--border);">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">Age</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);">${a.age||'—'} <span style="color:var(--text3);font-size:12px;">vs</span> ${b.age||'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid var(--border);">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">Record</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);">${a.record||'—'} <span style="color:var(--text3);font-size:12px;">vs</span> ${b.record||'—'}</span>
+      </div>
+    </div>
     ${tapeBar(a.height||'—', b.height||'—', aHeight, bHeight, 'HEIGHT')}
     ${tapeBar(a.reach||'—', b.reach||'—', aReach, bReach, 'REACH')}
-    ${tapeBar(a.record||'—', b.record||'—', aWins, bWins, 'RECORD')}
 
     <div class="tape-section-title">Your Flags</div>
     <div class="tape-flags">
