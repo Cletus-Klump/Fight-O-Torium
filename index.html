@@ -1594,8 +1594,17 @@ function renderPickCard(p) {
   const fA = fightersById.get(p.fighter_a_id);
   const fB = fightersById.get(p.fighter_b_id);
   const picked = fightersById.get(p.picked_fighter_id);
-  const lp = p.line && p.line.startsWith('+'), ln = p.line && p.line.startsWith('-');
   const fighterLink = (f) => f ? `<span class="fighter-link" onclick="event.stopPropagation();goToFighter('${f.id}')">${f.name}</span>` : '—';
+  // Compute both lines: p.line is Fighter A's line
+  const lineA = p.line || '';
+  const lineANum = parseInt(lineA);
+  const lineB = lineA && !isNaN(lineANum) ? (lineANum > 0 ? '-' + (lineANum > 100 ? Math.round(lineANum * 100 / (lineANum)) : lineANum) : '+' + Math.abs(lineANum)) : '';
+  // Simpler: derive opposite line
+  const oppLine = lineA ? (lineA.startsWith('-') ? '+' + lineA.slice(1) : '-' + lineA.slice(1)) : '';
+  // Determine picked fighter's line
+  const pickedIsA = p.picked_fighter_id === p.fighter_a_id;
+  const pickedLine = p.picked_fighter_id ? (pickedIsA ? lineA : oppLine) : '';
+  const plp = pickedLine.startsWith('+'), pln = pickedLine.startsWith('-');
   const resultBadge = p.result
     ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'HIT':p.result==='L'?'MISS':'PASS'}</span>`
     : `<span style="color:rgba(232,200,74,0.5);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
@@ -1619,11 +1628,11 @@ function renderPickCard(p) {
       </div>
     </div>
     <div class="pick-details" style="margin-top:10px;">
-      ${picked ? `<div style="font-size:13px;font-weight:600;color:var(--accent);">▶ ${fighterLink(picked)}</div>` : ''}
-      ${p.line ? `<span class="line-display ${lp?'positive':ln?'negative':''}">${p.line}</span>` : ''}
+      ${picked ? `<div style="font-size:13px;font-weight:600;color:var(--accent);">▶ ${fighterLink(picked)}${pickedLine ? ` <span class="line-display ${plp?'positive':pln?'negative':''}">${pickedLine}</span>` : ''}</div>` : ''}
       ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
       ${p.parlay_candidate ? '<span class="parlay-tag">Parlay</span>' : ''}
       ${p.result_method ? `<span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${p.result_method}${p.result_round?' '+p.result_round:''}</span>` : ''}
+      ${lineA ? `<div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:4px;">Lines: ${fA?.name||'A'} ${lineA} / ${fB?.name||'B'} ${oppLine}</div>` : ''}
     </div>
     ${p.failure_mode ? `<div class="failure-mode-box" style="margin-top:10px;"><div class="failure-mode-label">Failure Mode</div>${p.failure_mode}</div>` : ''}
     ${p.notes ? `<div style="margin-top:10px;font-size:13px;color:var(--text2);border-top:1px solid var(--border);padding-top:10px;">${p.notes}</div>` : ''}
