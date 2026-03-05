@@ -473,6 +473,16 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 </style>
 </head>
 <body>
+<div id="loadingOverlay" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--accent);">FIGHT-O-TORIUM</div>
+  <div style="width:40px;height:40px;position:relative;">
+    <div style="position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:var(--accent);animation:orbitSpin 1s linear infinite;"></div>
+    <div style="position:absolute;inset:3px;border-radius:50%;border:2px solid transparent;border-right-color:var(--red);animation:orbitSpin 1.4s linear infinite reverse;"></div>
+    <div style="position:absolute;inset:6px;border-radius:50%;border:2px solid transparent;border-bottom-color:var(--gold);animation:orbitSpin 0.8s linear infinite;"></div>
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">Loading</div>
+</div>
+<style>@keyframes orbitSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
 <div class="header">
   <div class="logo animate__animated animate__heartBeat" onclick="showPage('home',document.querySelector('.nav-btn'))" style="cursor:pointer;" onanimationend="this.classList.remove('animate__animated','animate__heartBeat')">
     <svg width="340" height="44" viewBox="0 0 340 44" xmlns="http://www.w3.org/2000/svg">
@@ -913,6 +923,8 @@ async function init(){
   }catch(e){setConn(false);toast('Connection error','error');console.error(e)}
   renderHome();
   history.replaceState({page:'home'},'');
+  const overlay=document.getElementById('loadingOverlay');
+  if(overlay){overlay.style.transition='opacity 0.4s ease';overlay.style.opacity='0';setTimeout(()=>overlay.remove(),400);}
 }
 
 function navigateTo(state,replace=false){
