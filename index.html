@@ -367,33 +367,55 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup--title-bmf .hm-bolt--br{bottom:8px;right:8px}
 
 /* Main Event non-title — large (actual main event) */
-.home-matchup--main-nontitle--large{padding:32px 40px}
+.home-matchup--main-nontitle--large{padding:28px 32px}
 .home-matchup--main-nontitle--large .home-matchup-label{color:var(--gold);border-bottom:1px solid var(--gold-border);padding-bottom:8px;margin-bottom:16px}
-.home-matchup--main-nontitle--large .home-matchup-photo{width:150px;height:150px}
-.home-matchup--main-nontitle--large .home-matchup-name{font-size:28px}
-.home-matchup--main-nontitle--large .home-matchup-vs{font-size:13px}
+.home-matchup--main-nontitle--large .home-matchup-photo{width:120px;height:120px}
+.home-matchup--main-nontitle--large .home-matchup-name{font-size:24px}
+.home-matchup--main-nontitle--large .home-matchup-vs{font-size:12px}
 
 /* Main Event non-title — standard (fallback) */
 .home-matchup--main-nontitle--standard .home-matchup-photo{width:72px;height:72px}
 .home-matchup--main-nontitle--standard .home-matchup-name{font-size:20px}
 
-/* Hot Matchup non-title */
-.home-matchup--hot-nontitle{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,var(--flame-orange),var(--flame-red));padding:28px 32px}
-.home-matchup--hot-nontitle .home-matchup-label{color:var(--flame-orange)}
-.home-matchup--hot-nontitle .home-matchup-vs{color:var(--flame-orange)}
-.home-matchup--hot-nontitle .home-matchup-photo{width:120px;height:120px}
-.home-matchup--hot-nontitle .home-matchup-name{font-size:24px}
+/* Hot Matchup non-title — NBA Jam treatment */
+.home-matchup--hot-nontitle{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,#ff6b2b,#e84a4a,#ff6b2b);padding:28px 32px;position:relative;overflow:hidden;box-shadow:0 0 25px rgba(255,107,43,0.2),0 0 50px rgba(232,74,74,0.1)}
+/* Radial fire glow behind content */
+.home-matchup--hot-nontitle::before{content:'';position:absolute;top:50%;left:50%;width:120%;height:120%;transform:translate(-50%,-50%);background:radial-gradient(ellipse at center,rgba(255,140,0,0.12) 0%,rgba(255,69,0,0.06) 40%,transparent 70%);pointer-events:none;animation:fireBreath 3s ease-in-out infinite}
+/* Rising heat haze */
+.home-matchup--hot-nontitle::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(0deg,rgba(255,107,43,0.08) 0%,rgba(232,74,74,0.04) 30%,transparent 100%);pointer-events:none;animation:heatRise 4s ease-in-out infinite}
+.home-matchup--hot-nontitle .home-matchup-label{color:#ff8c00;font-size:11px;letter-spacing:3px;position:relative;z-index:1}
+.home-matchup--hot-nontitle .home-matchup-vs{color:#ff6b2b;font-weight:700;text-shadow:0 0 10px rgba(255,107,43,0.5);position:relative;z-index:1}
+.home-matchup--hot-nontitle .home-matchup-photo{width:120px;height:120px;border-color:#ff6b2b;box-shadow:0 0 15px rgba(255,107,43,0.3),0 0 30px rgba(232,74,74,0.15);position:relative;z-index:1}
+.home-matchup--hot-nontitle .home-matchup-name{font-size:24px;background:linear-gradient(180deg,#fff 0%,#ffcc00 50%,#ff6b2b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:1;animation:pulse 2s ease-in-out 5}
+.home-matchup--hot-nontitle .home-matchup-fighters{position:relative;z-index:1}
+.home-matchup--hot-nontitle .home-matchup-meta{position:relative;z-index:1}
+.home-matchup--hot-nontitle .home-matchup-event{position:relative;z-index:1}
 .home-matchup--hot-nontitle .home-matchup-label .hm-label-text{animation:flameGlow 2s ease-in-out infinite}
+/* Ember particles */
+.hm-ember{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:0}
+.hm-ember--1{left:15%;bottom:20%;background:#ff6b2b;box-shadow:0 0 6px 2px #ff6b2b;animation:emberFloat 3s ease-in-out infinite}
+.hm-ember--2{left:75%;bottom:10%;background:#ffcc00;box-shadow:0 0 8px 3px #ffcc00;animation:emberFloat 2.5s ease-in-out 0.5s infinite}
+.hm-ember--3{left:40%;bottom:30%;background:#ff4500;box-shadow:0 0 6px 2px #ff4500;animation:emberFloat 3.5s ease-in-out 1s infinite}
+.hm-ember--4{left:85%;bottom:25%;background:#ff8c00;box-shadow:0 0 8px 3px #ff8c00;animation:emberFloat 2.8s ease-in-out 0.3s infinite}
+.hm-ember--5{left:25%;bottom:5%;background:#ffcc00;box-shadow:0 0 8px 3px #ffcc00;animation:emberFloat 3.2s ease-in-out 1.5s infinite}
+.hm-ember--6{left:60%;bottom:15%;background:#ff6b2b;box-shadow:0 0 6px 2px #ff6b2b;animation:emberFloat 2.6s ease-in-out 0.8s infinite}
 
 /* Hot Title treatment (combo) */
-.home-matchup--hot-title{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,var(--gold),var(--flame-orange),var(--flame-red));box-shadow:inset 0 0 15px rgba(212,168,67,0.1);padding:32px 40px}
-.home-matchup--hot-title .home-matchup-label{background:linear-gradient(90deg,var(--gold),var(--flame-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.home-matchup--hot-title .home-matchup-vs{color:var(--gold)}
-.home-matchup--hot-title .home-matchup-photo{width:180px;height:180px;border-radius:12px;border-color:var(--gold-border)}
-.home-matchup--hot-title .home-matchup-name{font-size:28px}
+.home-matchup--hot-title{border:2px solid transparent;background-origin:border-box;background-clip:padding-box,border-box;background-image:linear-gradient(var(--bg2),var(--bg2)),linear-gradient(135deg,var(--gold),#ff8c00,var(--flame-orange),var(--flame-red));box-shadow:inset 0 0 15px rgba(212,168,67,0.1),0 0 30px rgba(255,107,43,0.15);padding:32px 40px;position:relative;overflow:hidden}
+.home-matchup--hot-title::before{content:'';position:absolute;top:50%;left:50%;width:120%;height:120%;transform:translate(-50%,-50%);background:radial-gradient(ellipse at center,rgba(255,140,0,0.1) 0%,rgba(212,168,67,0.05) 40%,transparent 70%);pointer-events:none;animation:fireBreath 3s ease-in-out infinite}
+.home-matchup--hot-title .home-matchup-label{background:linear-gradient(90deg,var(--gold),#ff8c00,var(--flame-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:1}
+.home-matchup--hot-title .home-matchup-vs{color:var(--gold);text-shadow:0 0 10px rgba(212,168,67,0.4);position:relative;z-index:1}
+.home-matchup--hot-title .home-matchup-photo{width:180px;height:180px;border-radius:12px;border-color:#ff8c00;box-shadow:0 0 15px rgba(255,140,0,0.25);position:relative;z-index:1}
+.home-matchup--hot-title .home-matchup-name{font-size:28px;background:linear-gradient(180deg,#fff 0%,#ffcc00 50%,#ff8c00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:1;animation:pulse 2s ease-in-out 5}
+.home-matchup--hot-title .home-matchup-fighters{position:relative;z-index:1}
+.home-matchup--hot-title .home-matchup-meta{position:relative;z-index:1}
+.home-matchup--hot-title .home-matchup-event{position:relative;z-index:1}
 .home-matchup--hot-title .home-matchup-label .hm-label-text{animation:flameGlow 2s ease-in-out infinite}
 
 @keyframes flameGlow{0%,100%{text-shadow:0 0 4px rgba(255,107,43,0.4)}50%{text-shadow:0 0 12px rgba(255,107,43,0.7),0 0 20px rgba(232,74,74,0.3)}}
+@keyframes fireBreath{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+@keyframes heatRise{0%,100%{opacity:0.5;transform:translateY(0)}50%{opacity:1;transform:translateY(-8px)}}
+@keyframes emberFloat{0%{opacity:0;transform:translateY(0) scale(1)}15%{opacity:1}70%{opacity:0.9}100%{opacity:0;transform:translateY(-90px) scale(0.4)}}
 
 /* Home responsive */
 @media(max-width:720px){
@@ -405,9 +427,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup--title-bmf .home-matchup-photo{width:130px;height:130px}
 .home-matchup--title-bmf .home-matchup-name{font-size:22px}
 .home-matchup--title-bmf{padding:24px 20px}
-.home-matchup--main-nontitle--large .home-matchup-photo{width:100px;height:100px}
-.home-matchup--main-nontitle--large .home-matchup-name{font-size:22px}
-.home-matchup--main-nontitle--large{padding:24px 20px}
+.home-matchup--main-nontitle--large .home-matchup-photo{width:80px;height:80px}
+.home-matchup--main-nontitle--large .home-matchup-name{font-size:20px}
+.home-matchup--main-nontitle--large{padding:20px 16px}
 .home-matchup--main-nontitle--standard{padding:20px 16px}
 .home-matchup--hot-nontitle .home-matchup-photo{width:80px;height:80px}
 .home-matchup--hot-nontitle .home-matchup-name{font-size:20px}
@@ -966,10 +988,12 @@ function renderHome(){
     const isHot=ft.variant==='hot-nontitle'||ft.variant==='hot-title';
     const labelIcon=ft.belt ? ft.belt+' ' : (isHot ? flameIcon+' ' : '');
 
-    // Corner elements
+    // Corner / decoration elements
     let corners='';
+    const embers=`<div class="hm-ember hm-ember--1"></div><div class="hm-ember hm-ember--2"></div><div class="hm-ember hm-ember--3"></div><div class="hm-ember hm-ember--4"></div><div class="hm-ember hm-ember--5"></div><div class="hm-ember hm-ember--6"></div>`;
     if(ft.variant==='title-division') corners=`<div class="hm-corner hm-corner--tl"></div><div class="hm-corner hm-corner--tr"></div><div class="hm-corner hm-corner--bl"></div><div class="hm-corner hm-corner--br"></div>`;
     if(ft.variant==='title-bmf') corners=`<div class="hm-bolt hm-bolt--tl"></div><div class="hm-bolt hm-bolt--tr"></div><div class="hm-bolt hm-bolt--bl"></div><div class="hm-bolt hm-bolt--br"></div><div class="hm-plank-top"></div><div class="hm-plank-bottom"></div><div class="hm-tape hm-tape--left"></div><div class="hm-tape hm-tape--right"></div>`;
+    if(isHot) corners+=embers;
 
     // Belt badge
     let beltBadge='';
