@@ -833,8 +833,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
         <label class="form-label">Result</label>
         <div id="ea_result_chips" style="display:flex;gap:8px;flex-wrap:wrap;">
           <button type="button" class="chip-btn" data-val="" onclick="setChip('ea_result','',this)">Pending</button>
-          <button type="button" class="chip-btn" data-val="W" onclick="setChip('ea_result','W',this)">HIT</button>
-          <button type="button" class="chip-btn" data-val="L" onclick="setChip('ea_result','L',this)">MISS</button>
+          <button type="button" class="chip-btn" data-val="W" onclick="setChip('ea_result','W',this)">WIN</button>
+          <button type="button" class="chip-btn" data-val="L" onclick="setChip('ea_result','L',this)">LOSS</button>
           <button type="button" class="chip-btn" data-val="P" onclick="setChip('ea_result','P',this)">PASS</button>
         </div>
       </div>
@@ -1465,20 +1465,22 @@ async function selectFighter(id){
       <div class="card-title">Matchup History (${allMatchups.length} logged)</div>
       ${!allMatchups.length?'<div style="color:var(--text3);font-size:13px;">No matchups logged yet</div>':`
         <table class="history-table">
-          <thead><tr><th>Card</th><th>Opponent</th><th>My Pick</th><th>Line</th><th>Confidence</th><th>Result</th></tr></thead>
+          <thead><tr><th>Card</th><th>Opponent</th><th>My Pick</th><th>Line</th><th>Confidence</th><th>Result</th><th>Pick</th></tr></thead>
           <tbody>${allMatchups.map(p=>{
             const opp=fightersById.get(p.fighter_a_id===id?p.fighter_b_id:p.fighter_a_id);
             const card=cardsById.get(p.card_id);
             const picked=p.picked_fighter_id?fightersById.get(p.picked_fighter_id):null;
             const isPicked=p.picked_fighter_id===id;
-            const resultLabel=p.result?(isPicked?(p.result==='W'?'HIT':'MISS'):(p.result==='W'?'MISS':'HIT')):'';
+            const resultLabel=p.result?(p.result==='W'?'WIN':p.result==='L'?'LOSS':'PASS'):'';
+            const pickLabel=p.result&&p.result!=='P'&&p.picked_fighter_id?(isPicked?(p.result==='W'?'HIT':'MISS'):(p.result==='W'?'MISS':'HIT')):'';
             return `<tr>
             <td>${card?`<span class="fighter-link" onclick="goToCard('${card.id}')">${card.name}</span>`:'—'}</td>
             <td>${opp?`<span class="fighter-link" onclick="goToFighter('${opp.id}')">${opp.name}</span>`:'—'} <span style="cursor:pointer;color:var(--text3);font-size:11px;" onclick="openMatchupDetail('${p.id}')" title="View matchup">↗</span></td>
             <td>${picked?`<span style="color:var(--accent);font-weight:600;">${picked.name}</span>`:'<span style="color:var(--text3);">—</span>'}</td>
             <td><span class="line-display ${p.line&&p.line.startsWith('+')?'positive':p.line&&p.line.startsWith('-')?'negative':''}">${p.line||'—'}</span></td>
             <td>${p.confidence?`<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>`:'—'}</td>
-            <td>${p.result?`<span class="result-${isPicked?p.result:(p.result==='W'?'L':'W')}">${resultLabel}</span>`:`<span style="color:rgba(232,200,74,0.5);font-family:'JetBrains Mono',monospace;font-size:10px;">PENDING</span>`}</td>
+            <td>${p.result?`<span class="result-${p.result}">${resultLabel}</span>`:`<span style="color:rgba(232,200,74,0.5);font-family:'JetBrains Mono',monospace;font-size:10px;">PENDING</span>`}</td>
+            <td>${pickLabel?`<span class="result-${isPicked?p.result:(p.result==='W'?'L':'W')}">${pickLabel}</span>`:''}</td>
           </tr>`}).join('')}</tbody>
         </table>`}
     </div>
@@ -1640,8 +1642,11 @@ function renderPickCard(p) {
   const pickedLine = p.picked_fighter_id ? (pickedIsA ? lineA : oppLine) : '';
   const plp = pickedLine.startsWith('+'), pln = pickedLine.startsWith('-');
   const resultBadge = p.result
-    ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'HIT':p.result==='L'?'MISS':'PASS'}</span>`
+    ? `<span class="result-${p.result}" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">${p.result==='W'?'WIN':p.result==='L'?'LOSS':'PASS'}</span>`
     : `<span style="color:rgba(232,200,74,0.5);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">PENDING</span>`;
+  const pickBadge = p.result && p.result !== 'P' && p.picked_fighter_id
+    ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 6px;border-radius:4px;background:${p.result==='W'?'rgba(76,175,80,0.15)':'rgba(244,67,54,0.15)'};color:${p.result==='W'?'var(--green)':'var(--red)'};">${p.result==='W'?'✓ HIT':'✗ MISS'}</span>`
+    : '';
 
   return `<div class="pick-card" data-pick-id="${p.id}" onclick="openMatchupDetail('${p.id}')" style="cursor:pointer;">
     <div class="pick-card-header">
@@ -1655,7 +1660,7 @@ function renderPickCard(p) {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup">🔥</button>
-        ${resultBadge}
+        ${resultBadge}${pickBadge}
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
         <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
         <button onclick="event.stopPropagation();deletePick('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
@@ -2253,7 +2258,7 @@ function renderCardParlays() {
             const res = p.result;
             const rc = res === 'W' ? 'var(--green)' : res === 'L' ? 'var(--red)' : 'var(--text3)';
             return `<div class="parlay-leg-pill" style="color:${rc};border-color:${rc}20;">
-              ${picked ? picked.name : '?'} ${p.line || ''} ${res ? '· ' + (res === 'W' ? 'HIT' : 'MISS') : ''}
+              ${picked ? picked.name : '?'} ${p.line || ''} ${res ? '· ' + (res === 'W' ? 'WIN' : 'LOSS') : ''}
             </div>`;
           }).join('')}
         </div>
