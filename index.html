@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fight-O-Torium</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Titan+One&family=JetBrains+Mono:wght@300;400;500;700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 <style>
 :root{--bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;--border:#2a2a2a;--border2:#333333;--text:#e8e8e8;--text2:#999999;--text3:#555555;--accent:#e8c84a;--accent2:#c4a832;--red:#e84a4a;--green:#4ae87a;--blue:#4a8ae8;--orange:#e8884a;--purple:#884ae8;--gold:#d4a843;--gold-dim:rgba(212,168,67,0.15);--gold-border:rgba(212,168,67,0.4);--bmf-silver:#aaa;--bmf-red:#cc2222;--flame-orange:#ff6b2b;--flame-red:#e84a4a}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -431,7 +432,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 </head>
 <body>
 <div class="header">
-  <div class="logo" onclick="showPage('home',document.querySelector('.nav-btn'))" style="cursor:pointer;">
+  <div class="logo animate__animated animate__heartBeat" onclick="showPage('home',document.querySelector('.nav-btn'))" style="cursor:pointer;" onanimationend="this.classList.remove('animate__animated','animate__heartBeat')">
     <svg width="340" height="44" viewBox="0 0 340 44" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="hr2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#ff6b6b"/><stop offset="100%" style="stop-color:#990000"/></linearGradient>
