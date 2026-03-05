@@ -194,6 +194,26 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .pick-tag-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:13px;cursor:pointer;transition:all 0.15s;line-height:1;opacity:0.4}
 .pick-tag-btn:hover{opacity:0.8}
 .pick-tag-btn.active{opacity:1;border-color:var(--accent)}
+
+/* EDIT CARD MODAL (ECM) */
+.ecm-section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.ecm-section-label:first-child{margin-top:0}
+.ecm-fight-row{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:6px}
+.ecm-fight-names{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ecm-fight-wc{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.ecm-toggles{display:flex;gap:4px;flex-shrink:0}
+.ecm-toggle{background:var(--bg4);border:1px solid var(--border);border-radius:4px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.15s;line-height:1;opacity:0.4}
+.ecm-toggle:hover{opacity:0.7}
+.ecm-toggle.active-fire{opacity:1;border-color:var(--flame-orange);background:rgba(255,107,43,0.15)}
+.ecm-toggle.active-gold{opacity:1;border-color:var(--gold);background:var(--gold-dim)}
+.ecm-toggle.active-title{opacity:1;border-color:var(--accent);background:rgba(232,200,74,0.1)}
+.ecm-title-type-row{padding:4px 0 4px 42px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)}
+.ecm-title-type-row select{background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 8px;font-family:'Barlow',sans-serif}
+.ecm-actions{display:flex;gap:8px;margin-top:12px}
+.ecm-delete-confirm{background:rgba(232,74,74,0.08);border:1px solid rgba(232,74,74,0.3);border-radius:6px;padding:12px 16px;margin-top:10px;display:none;text-align:center}
+.ecm-delete-confirm p{font-size:13px;color:var(--text2);margin-bottom:10px}
+.ecm-delete-confirm .btn-danger{margin-right:8px}
+
 .pick-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px}
 .pick-fighters{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
 .pick-details{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
@@ -628,11 +648,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
           <div class="page-subtitle" id="cardDetailMeta"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn btn-danger btn-sm" onclick="deleteCurrentCard()" style="padding:8px 14px;">🗑</button>
           <button class="btn btn-secondary" onclick="openEditCardModal()" style="padding:8px 16px;">✏ Edit Card</button>
-          <button class="btn btn-secondary" onclick="syncCard()" id="syncCardBtn" style="padding:8px 16px;">⟳ Sync Card</button>
           <button class="btn btn-secondary" onclick="enterReorderMode()" id="reorderBtn" style="padding:8px 16px;">↕ Reorder</button>
-          <button class="btn btn-secondary" onclick="openAddMatchupModal()" style="padding:8px 16px;">+ Add Matchup</button>
           <button class="btn btn-secondary" onclick="openParlayModal()" style="padding:8px 16px;">⚡ Parlay Builder</button>
         </div>
       </div>
@@ -696,16 +713,35 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 </div>
 <!-- Edit Card Modal -->
 <div class="modal-overlay" id="editCardModal">
-  <div class="modal">
-    <div class="modal-header"><div class="modal-title">Edit Card</div><button class="modal-close" onclick="closeModal('editCardModal')">✕</button></div>
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header"><div class="modal-title">Edit Card</div><button class="modal-close" onclick="closeEditCardModal()">✕</button></div>
     <div class="form-grid">
+      <!-- Section 1: Card Details -->
+      <div class="ecm-section-label">Card Details</div>
       <div class="form-field"><label class="form-label">Event Name *</label><input type="text" class="form-input" id="ec_name" placeholder="e.g. UFC Fight Night 268 — Mexico City"></div>
       <div class="form-grid form-grid-2">
         <div class="form-field"><label class="form-label">Date *</label><input type="date" class="form-input" id="ec_date"></div>
         <div class="form-field"><label class="form-label">Venue</label><input type="text" class="form-input" id="ec_venue" placeholder="e.g. Arena CDMX"></div>
       </div>
       <div class="form-field"><label class="form-label">Notes</label><textarea class="form-textarea" id="ec_notes" placeholder="Card-level context, altitude flags, etc."></textarea></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;"><button class="btn btn-secondary" onclick="closeModal('editCardModal')">Cancel</button><button class="btn btn-primary" onclick="saveEditCard()">Save Changes</button></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;"><button class="btn btn-primary" onclick="saveEditCard()">Save Details</button></div>
+
+      <!-- Section 2: Fights on Card -->
+      <div class="ecm-section-label">Fights on Card</div>
+      <div id="ecm_fight_list"></div>
+
+      <!-- Section 3: Card Actions -->
+      <div class="ecm-section-label">Card Actions</div>
+      <div class="ecm-actions">
+        <button class="btn btn-secondary" onclick="closeEditCardModal();openAddMatchupModal()" style="padding:8px 16px;">+ Add Matchup</button>
+        <button class="btn btn-secondary" id="syncCardBtn" onclick="closeEditCardModal();syncCard()" style="padding:8px 16px;">⟳ Sync Card</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleDeleteConfirm()" style="padding:8px 14px;margin-left:auto;">🗑 Delete Card</button>
+      </div>
+      <div class="ecm-delete-confirm" id="ecmDeleteConfirm">
+        <p>Delete this card and all its picks? This cannot be undone.</p>
+        <button class="btn btn-danger btn-sm" onclick="deleteCurrentCard()">Yes, Delete</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleDeleteConfirm()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1664,7 +1700,7 @@ function renderPickCard(p) {
       ${picked ? `<div style="font-size:13px;font-weight:600;color:var(--accent);">▶ ${fighterLink(picked)}${pickedLine ? ` <span class="line-display ${plp?'positive':pln?'negative':''}">${pickedLine}</span>` : ''}</div>` : ''}
       ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
       ${p.parlay_candidate ? '<span class="parlay-tag">Parlay</span>' : ''}
-      <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup" style="font-size:12px;padding:2px 6px;">🔥</button>
+      ${p.hot_matchup ? '<span style="font-size:12px;" title="Hot Matchup">🔥</span>' : ''}
       ${p.result_method ? `<span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${p.result_method}${p.result_round?' '+p.result_round:''}</span>` : ''}
       ${lineA ? `<div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:4px;">Lines: ${fA?.name||'A'} ${lineA} / ${fB?.name||'B'} ${oppLine}</div>` : ''}
     </div>
@@ -1796,24 +1832,6 @@ function cancelReorderMode() {
   showCardDetail(currentCardId);
 }
 
-// ---- HOT MATCHUP TOGGLE ----
-async function toggleHotMatchup(pickId) {
-  const pick = picksById.get(pickId);
-  if (!pick) return;
-  try {
-    const turningOn = !pick.hot_matchup;
-    if (turningOn) {
-      const existing = allPicks.find(p => p.card_id === pick.card_id && p.hot_matchup && p.id !== pickId);
-      if (existing) {
-        await sbPatch('picks', existing.id, { hot_matchup: false });
-        existing.hot_matchup = false;
-      }
-    }
-    await sbPatch('picks', pickId, { hot_matchup: turningOn });
-    pick.hot_matchup = turningOn;
-    showCardDetail(currentCardId);
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
 
 function openEditCardModal(){
   const card=cardsById.get(currentCardId);
@@ -1822,7 +1840,110 @@ function openEditCardModal(){
   document.getElementById('ec_date').value=card.date||'';
   document.getElementById('ec_venue').value=card.venue||'';
   document.getElementById('ec_notes').value=card.notes||'';
+  document.getElementById('ecmDeleteConfirm').style.display='none';
+  window._ecmDirty=false;
+  renderEditCardFightList();
   openModal('editCardModal');
+}
+
+function renderEditCardFightList(){
+  const container=document.getElementById('ecm_fight_list');
+  const picks=allPicks.filter(p=>p.card_id===currentCardId).sort((a,b)=>(a.card_order||0)-(b.card_order||0));
+  if(!picks.length){container.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--text3);padding:8px 0;">No fights on this card yet.</div>';return;}
+  container.innerHTML=picks.map(p=>{
+    const fA=fightersById.get(p.fighter_a_id), fB=fightersById.get(p.fighter_b_id);
+    const nameA=fA?.name||'TBD', nameB=fB?.name||'TBD';
+    const isHot=!!p.hot_matchup, isME=!!p.main_event, isTitle=!!p.title_fight;
+    let row=`<div class="ecm-fight-row">
+      <div class="ecm-fight-names">${nameA} vs ${nameB}</div>
+      ${p.weight_class?`<div class="ecm-fight-wc">${p.weight_class}</div>`:''}
+      <div class="ecm-toggles">
+        <button class="ecm-toggle${isHot?' active-fire':''}" onclick="ecmToggleHot('${p.id}')" title="Hot Matchup">🔥</button>
+        <button class="ecm-toggle${isME?' active-gold':''}" onclick="ecmToggleMainEvent('${p.id}')" title="Main Event">⭐</button>
+        <button class="ecm-toggle${isTitle?' active-title':''}" onclick="ecmToggleTitle('${p.id}')" title="Title Fight">🏆</button>
+      </div>
+    </div>`;
+    if(isTitle){
+      row+=`<div class="ecm-title-type-row">Title type: <select onchange="ecmSaveTitleType('${p.id}',this.value)">
+        <option value="">Select...</option>
+        <optgroup label="Division">
+          <option value="Strawweight"${p.title_type==='Strawweight'?' selected':''}>Strawweight</option><option value="Flyweight"${p.title_type==='Flyweight'?' selected':''}>Flyweight</option><option value="Bantamweight"${p.title_type==='Bantamweight'?' selected':''}>Bantamweight</option><option value="Featherweight"${p.title_type==='Featherweight'?' selected':''}>Featherweight</option><option value="Lightweight"${p.title_type==='Lightweight'?' selected':''}>Lightweight</option><option value="Welterweight"${p.title_type==='Welterweight'?' selected':''}>Welterweight</option><option value="Middleweight"${p.title_type==='Middleweight'?' selected':''}>Middleweight</option><option value="Light Heavyweight"${p.title_type==='Light Heavyweight'?' selected':''}>Light Heavyweight</option><option value="Heavyweight"${p.title_type==='Heavyweight'?' selected':''}>Heavyweight</option><option value="Women's Strawweight"${p.title_type==="Women's Strawweight"?' selected':''}>Women's Strawweight</option><option value="Women's Flyweight"${p.title_type==="Women's Flyweight"?' selected':''}>Women's Flyweight</option><option value="Women's Bantamweight"${p.title_type==="Women's Bantamweight"?' selected':''}>Women's Bantamweight</option><option value="Women's Featherweight"${p.title_type==="Women's Featherweight"?' selected':''}>Women's Featherweight</option>
+        </optgroup>
+        <optgroup label="Interim">
+          <option value="Interim Strawweight"${p.title_type==='Interim Strawweight'?' selected':''}>Interim Strawweight</option><option value="Interim Flyweight"${p.title_type==='Interim Flyweight'?' selected':''}>Interim Flyweight</option><option value="Interim Bantamweight"${p.title_type==='Interim Bantamweight'?' selected':''}>Interim Bantamweight</option><option value="Interim Featherweight"${p.title_type==='Interim Featherweight'?' selected':''}>Interim Featherweight</option><option value="Interim Lightweight"${p.title_type==='Interim Lightweight'?' selected':''}>Interim Lightweight</option><option value="Interim Welterweight"${p.title_type==='Interim Welterweight'?' selected':''}>Interim Welterweight</option><option value="Interim Middleweight"${p.title_type==='Interim Middleweight'?' selected':''}>Interim Middleweight</option><option value="Interim Light Heavyweight"${p.title_type==='Interim Light Heavyweight'?' selected':''}>Interim Light Heavyweight</option><option value="Interim Heavyweight"${p.title_type==='Interim Heavyweight'?' selected':''}>Interim Heavyweight</option>
+        </optgroup>
+        <optgroup label="Special">
+          <option value="BMF"${p.title_type==='BMF'?' selected':''}>BMF</option>
+        </optgroup>
+      </select></div>`;
+    }
+    return row;
+  }).join('');
+}
+
+async function ecmToggleHot(pickId){
+  const pick=picksById.get(pickId);if(!pick)return;
+  try{
+    const turningOn=!pick.hot_matchup;
+    if(turningOn){
+      const existing=allPicks.find(p=>p.card_id===pick.card_id&&p.hot_matchup&&p.id!==pickId);
+      if(existing){await sbPatch('picks',existing.id,{hot_matchup:false});existing.hot_matchup=false;}
+    }
+    await sbPatch('picks',pickId,{hot_matchup:turningOn});
+    pick.hot_matchup=turningOn;
+    window._ecmDirty=true;
+    renderEditCardFightList();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function ecmToggleMainEvent(pickId){
+  const pick=picksById.get(pickId);if(!pick)return;
+  try{
+    const turningOn=!pick.main_event;
+    if(turningOn){
+      const existing=allPicks.find(p=>p.card_id===pick.card_id&&p.main_event&&p.id!==pickId);
+      if(existing){await sbPatch('picks',existing.id,{main_event:false});existing.main_event=false;}
+    }
+    await sbPatch('picks',pickId,{main_event:turningOn});
+    pick.main_event=turningOn;
+    window._ecmDirty=true;
+    renderEditCardFightList();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function ecmToggleTitle(pickId){
+  const pick=picksById.get(pickId);if(!pick)return;
+  try{
+    const turningOn=!pick.title_fight;
+    if(turningOn){
+      await sbPatch('picks',pickId,{title_fight:true});
+      pick.title_fight=true;
+    } else {
+      await sbPatch('picks',pickId,{title_fight:false,title_type:null});
+      pick.title_fight=false;pick.title_type=null;
+    }
+    window._ecmDirty=true;
+    renderEditCardFightList();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function ecmSaveTitleType(pickId,value){
+  const pick=picksById.get(pickId);if(!pick)return;
+  try{
+    await sbPatch('picks',pickId,{title_type:value||null});
+    pick.title_type=value||null;
+    window._ecmDirty=true;
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+function toggleDeleteConfirm(){
+  const el=document.getElementById('ecmDeleteConfirm');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function closeEditCardModal(){
+  closeModal('editCardModal');
+  if(window._ecmDirty&&currentCardId) showCardDetail(currentCardId);
 }
 
 async function saveEditCard(){
@@ -1847,10 +1968,8 @@ async function saveEditCard(){
 
 async function deleteCurrentCard(){
   if(!currentCardId)return;
-  const card=cardsById.get(currentCardId);
-  if(!confirm(`Delete "${card?.name}"? This will also delete all picks logged for this card. This cannot be undone.`))return;
   try{
-    // Delete all picks for this card first
+    closeModal('editCardModal');
     await sbDeleteWhere('picks','card_id=eq.'+currentCardId);
     await sbDelete('cards',currentCardId);
     toast('Card deleted','success');
