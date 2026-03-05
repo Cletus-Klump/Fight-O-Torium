@@ -347,7 +347,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup--title-division .hm-corner--br{bottom:0;right:0;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);border-radius:0 0 10px 0}
 
 /* BMF Title treatment */
-.home-matchup--title-bmf{border:3px solid #444;background:linear-gradient(135deg,var(--bg2) 0%,rgba(204,34,34,0.08) 100%);position:relative;padding:28px 32px;overflow:hidden}
+.home-matchup--title-bmf{border:3px solid #444;background:linear-gradient(135deg,var(--bg2) 0%,rgba(204,34,34,0.08) 100%);position:relative;padding:28px 32px;overflow:hidden;box-shadow:0 0 15px rgba(204,34,34,0.15),inset 0 0 30px rgba(204,34,34,0.05);animation:flicker 4s linear 2.5}
 /* Chainlink fence overlay */
 .home-matchup--title-bmf::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 0L24 12L12 24L0 12Z' fill='none' stroke='%23888' stroke-width='0.7'/%3E%3Ccircle cx='12' cy='0' r='0.8' fill='%23666'/%3E%3Ccircle cx='0' cy='12' r='0.8' fill='%23666'/%3E%3Ccircle cx='24' cy='12' r='0.8' fill='%23666'/%3E%3Ccircle cx='12' cy='24' r='0.8' fill='%23666'/%3E%3C/svg%3E");opacity:0.12;border-radius:8px;pointer-events:none;z-index:0}
 /* 2x4 wood plank — top */
@@ -364,7 +364,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .home-matchup--title-bmf .home-matchup-vs{color:var(--bmf-red)}
 .home-matchup--title-bmf .home-matchup-fighters{position:relative;z-index:3}
 .home-matchup--title-bmf .home-matchup-photo{width:130px;height:130px;border-radius:8px;border-color:#555}
-.home-matchup--title-bmf .home-matchup-name{font-size:24px;text-shadow:0 0 8px rgba(204,34,34,0.3)}
+.home-matchup--title-bmf .home-matchup-name{font-size:24px;text-shadow:0 0 8px rgba(204,34,34,0.5),0 0 20px rgba(204,34,34,0.2);animation:flicker 4s linear 2.5}
 .home-matchup--title-bmf .home-matchup-meta{position:relative;z-index:3}
 .home-matchup--title-bmf .home-matchup-event{position:relative;z-index:3}
 .home-matchup--title-bmf .hm-bolt{position:absolute;width:10px;height:10px;background:#555;border-radius:50%;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5),0 0 2px rgba(255,255,255,0.1);pointer-events:none;z-index:4}
@@ -423,6 +423,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 @keyframes fireBreath{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
 @keyframes heatRise{0%,100%{opacity:0.5;transform:translateY(0)}50%{opacity:1;transform:translateY(-8px)}}
 @keyframes emberFloat{0%{opacity:0;transform:translateY(0) scale(1)}15%{opacity:1}70%{opacity:0.9}100%{opacity:0;transform:translateY(-90px) scale(0.4)}}
+@keyframes flicker{0%,100%{opacity:1}4%{opacity:1}6%{opacity:0.4}8%{opacity:1}10%{opacity:0.3}11%{opacity:1}14%{opacity:1}20%{opacity:1}22%{opacity:0.6}23%{opacity:1}34%{opacity:1}36%{opacity:0.2}38%{opacity:1}48%{opacity:1}50%{opacity:0.5}52%{opacity:1}54%{opacity:0.3}56%{opacity:1}76%{opacity:1}78%{opacity:0.5}80%{opacity:1}86%{opacity:1}87%{opacity:0.4}88%{opacity:1}92%{opacity:1}94%{opacity:0.3}96%{opacity:1}}
 
 /* Home responsive */
 @media(max-width:720px){
