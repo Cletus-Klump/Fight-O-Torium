@@ -1654,7 +1654,6 @@ function renderPickCard(p) {
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup">🔥</button>
         ${resultBadge}${pickBadge}
         <button onclick="event.stopPropagation();openEditAnalysisModal('${p.id}')" style="background:${picked?'rgba(232,200,74,0.08)':'var(--bg3)'};border:1px solid ${picked?'rgba(232,200,74,0.3)':'var(--border)'};border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:${picked?'var(--accent)':'var(--text3)'};cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${picked?'rgba(232,200,74,0.3)':'var(--border)'}'">MY PICK</button>
         <button onclick="event.stopPropagation();openEditMatchupModal('${p.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text3);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Edit Matchup">✎</button>
@@ -1665,6 +1664,7 @@ function renderPickCard(p) {
       ${picked ? `<div style="font-size:13px;font-weight:600;color:var(--accent);">▶ ${fighterLink(picked)}${pickedLine ? ` <span class="line-display ${plp?'positive':pln?'negative':''}">${pickedLine}</span>` : ''}</div>` : ''}
       ${p.confidence ? `<span class="conf-badge conf-${p.confidence}">${p.confidence}</span>` : ''}
       ${p.parlay_candidate ? '<span class="parlay-tag">Parlay</span>' : ''}
+      <button class="pick-tag-btn${p.hot_matchup?' active':''}" onclick="event.stopPropagation();toggleHotMatchup('${p.id}')" title="Hot Matchup" style="font-size:12px;padding:2px 6px;">🔥</button>
       ${p.result_method ? `<span style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${p.result_method}${p.result_round?' '+p.result_round:''}</span>` : ''}
       ${lineA ? `<div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:4px;">Lines: ${fA?.name||'A'} ${lineA} / ${fB?.name||'B'} ${oppLine}</div>` : ''}
     </div>
