@@ -244,8 +244,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .tape-bar-left{background:rgba(232,74,74,0.3);transition:width 0.4s ease}
 .tape-bar-right{background:rgba(74,138,232,0.3);transition:width 0.4s ease}
 .tape-flags{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:8px}
-.tape-flag-col{display:flex;flex-direction:column;gap:8px}
-.tape-flag-col .flag-detail-text{font-size:12px;color:var(--text2);line-height:1.5}
+.tape-flag-col{display:flex;flex-direction:column;gap:10px;background:linear-gradient(135deg,rgba(232,200,74,0.04),rgba(255,255,255,0.02));border:1px solid rgba(232,200,74,0.12);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.tape-flag-col::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(232,200,74,0.3),transparent)}
+.tape-flag-col .flag-detail-text{font-size:12px;color:var(--text2);line-height:1.5;font-style:italic;border-left:2px solid rgba(232,200,74,0.2);padding-left:10px}
+.tape-flag-col .tape-pick-record{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.tape-flag-col .tape-pick-record .rec-w{color:var(--green);font-weight:700}
+.tape-flag-col .tape-pick-record .rec-l{color:var(--red);font-weight:700}
 .tape-breakdown{position:relative;background:linear-gradient(135deg,#141414 0%,#1a1a1a 50%,#111 100%);border:1px solid #2a2a2a;border-radius:8px;padding:36px 40px 32px;margin-top:4px;font-family:Georgia,'Times New Roman',serif;font-size:1.1rem;line-height:1.75;color:#d4d0c8;white-space:pre-wrap;font-style:italic;letter-spacing:0.01em}
 .tape-breakdown::before{content:'\201C';position:absolute;top:8px;left:16px;font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:1;color:var(--accent);opacity:0.25;pointer-events:none}
 .tape-breakdown::after{content:'\201D';position:absolute;bottom:-12px;right:20px;font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:1;color:var(--accent);opacity:0.25;pointer-events:none}
@@ -253,8 +257,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .tape-breakdown-attr::before{content:'';flex:0 0 24px;height:1px;background:var(--accent);opacity:0.5}
 .tape-breakdown-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:center 20%;border:2px solid var(--accent);opacity:0.85;flex-shrink:0}
 .tape-notes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.tape-notes .card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:16px}
-.tape-notes .card-title{margin-bottom:10px}
+.tape-notes .card{background:linear-gradient(135deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.tape-notes .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)}
+.tape-notes .card-title{margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent)}
+.tape-notes .flag-detail-text{font-size:12px;color:var(--text2);line-height:1.6}
 
 /* UTILS */
 .loading{display:flex;align-items:center;gap:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:12px;padding:20px}
@@ -1933,6 +1939,7 @@ function openMatchupDetail(pickId){
   const aP=allPicks.filter(x=>x.picked_fighter_id===a.id&&x.result);
   const bP=allPicks.filter(x=>x.picked_fighter_id===b.id&&x.result);
   const rec=picks=>{const w=picks.filter(x=>x.result==='W').length,l=picks.filter(x=>x.result==='L').length;return picks.length?`${w}W / ${l}L`:'—'};
+  const recStyled=picks=>{const w=picks.filter(x=>x.result==='W').length,l=picks.filter(x=>x.result==='L').length;return picks.length?`<span class="rec-w">${w}W</span><span style="color:var(--text3);margin:0 2px;">—</span><span class="rec-l">${l}L</span>`:'<span style="color:var(--text3);">0W — 0L</span>'};
 
   const silhouetteSvg=`<svg class="tape-silhouette" width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="20" r="12" stroke="currentColor" stroke-width="1.5"/><path d="M10 55 C10 38 50 38 50 55" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`;
   const photoHtml=(f)=>f.image_url?`<div class="tape-photo"><img src="${f.image_url}" alt="${f.name}"></div>`:`<div class="tape-photo">${silhouetteSvg}</div>`;
@@ -1977,13 +1984,17 @@ function openMatchupDetail(pickId){
     <div class="tape-section-title">Your Flags</div>
     <div class="tape-flags">
       <div class="tape-flag-col">
-        <div>${a.flag_type?`<span class="flag-badge flag-${a.flag_type}" style="font-size:11px;padding:4px 10px;">${a.flag_type}</span>`:''}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">Pick Record: ${rec(aP)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>${a.flag_type?`<span class="flag-badge flag-${a.flag_type}" style="font-size:12px;padding:5px 14px;letter-spacing:1px;">${a.flag_type}</span>`:'<span style="color:var(--text3);font-size:11px;font-family:\'JetBrains Mono\',monospace;">NO FLAG</span>'}</div>
+          <div class="tape-pick-record">${recStyled(aP)}</div>
+        </div>
         ${a.flag_detail?`<div class="flag-detail-text">${a.flag_detail}</div>`:''}
       </div>
       <div class="tape-flag-col">
-        <div>${b.flag_type?`<span class="flag-badge flag-${b.flag_type}" style="font-size:11px;padding:4px 10px;">${b.flag_type}</span>`:''}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">Pick Record: ${rec(bP)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>${b.flag_type?`<span class="flag-badge flag-${b.flag_type}" style="font-size:12px;padding:5px 14px;letter-spacing:1px;">${b.flag_type}</span>`:'<span style="color:var(--text3);font-size:11px;font-family:\'JetBrains Mono\',monospace;">NO FLAG</span>'}</div>
+          <div class="tape-pick-record">${recStyled(bP)}</div>
+        </div>
         ${b.flag_detail?`<div class="flag-detail-text">${b.flag_detail}</div>`:''}
       </div>
     </div>`;
