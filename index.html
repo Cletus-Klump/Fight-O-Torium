@@ -241,12 +241,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .tape-stat-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);text-align:right}
 .tape-bar{height:26px;background:rgba(0,0,0,0.4);border-radius:4px;display:flex;overflow:hidden;position:relative;box-shadow:inset 0 2px 4px rgba(0,0,0,0.3)}
 .tape-bar::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(232,200,74,0.4);box-shadow:0 0 6px rgba(232,200,74,0.3);z-index:2}
-.tape-bar-left{background:linear-gradient(180deg,rgba(232,74,74,0.6),rgba(180,40,40,0.5));position:relative;transition:width 0.5s cubic-bezier(.4,0,.2,1);animation:barPulseRed 2s ease-in-out infinite}
-.tape-bar-left::after{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,0.12),transparent)}
-.tape-bar-right{background:linear-gradient(180deg,rgba(74,138,232,0.6),rgba(40,90,180,0.5));position:relative;transition:width 0.5s cubic-bezier(.4,0,.2,1);animation:barPulseBlue 2s ease-in-out infinite}
-.tape-bar-right::after{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,0.12),transparent)}
-@keyframes barPulseRed{0%,100%{background:linear-gradient(180deg,rgba(232,74,74,0.5),rgba(180,40,40,0.4))}50%{background:linear-gradient(180deg,rgba(232,74,74,0.75),rgba(200,50,50,0.6))}}
-@keyframes barPulseBlue{0%,100%{background:linear-gradient(180deg,rgba(74,138,232,0.5),rgba(40,90,180,0.4))}50%{background:linear-gradient(180deg,rgba(74,138,232,0.75),rgba(50,100,200,0.6))}}
+.tape-bar-left{background:linear-gradient(180deg,rgba(232,74,74,0.55),rgba(160,30,30,0.4));position:relative;transition:width 0.5s cubic-bezier(.4,0,.2,1);animation:barHoverRed 2s ease-in-out 5}
+.tape-bar-left::after{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,0.08),transparent)}
+.tape-bar-right{background:linear-gradient(180deg,rgba(74,138,232,0.55),rgba(30,70,160,0.4));position:relative;transition:width 0.5s cubic-bezier(.4,0,.2,1);animation:barHoverBlue 2s ease-in-out 5}
+.tape-bar-right::after{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,0.08),transparent)}
+@keyframes barHoverRed{0%,100%{box-shadow:0 2px 8px rgba(232,74,74,0.15),inset 0 1px 2px rgba(255,255,255,0.05);transform:scaleY(1)}50%{box-shadow:0 4px 16px rgba(232,74,74,0.35),0 0 20px rgba(232,74,74,0.12),inset 0 1px 2px rgba(255,255,255,0.08);transform:scaleY(1.06)}}
+@keyframes barHoverBlue{0%,100%{box-shadow:0 2px 8px rgba(74,138,232,0.15),inset 0 1px 2px rgba(255,255,255,0.05);transform:scaleY(1)}50%{box-shadow:0 4px 16px rgba(74,138,232,0.35),0 0 20px rgba(74,138,232,0.12),inset 0 1px 2px rgba(255,255,255,0.08);transform:scaleY(1.06)}}
 .tape-flags{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:8px}
 .tape-flag-col{display:flex;flex-direction:column;gap:10px;background:linear-gradient(135deg,rgba(232,200,74,0.04),rgba(255,255,255,0.02));border:1px solid rgba(232,200,74,0.12);border-radius:10px;padding:16px;position:relative;overflow:hidden}
 .tape-flag-col::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(232,200,74,0.3),transparent)}
