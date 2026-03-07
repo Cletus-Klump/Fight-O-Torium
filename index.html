@@ -1719,7 +1719,7 @@ function showCardDetail(cardId){
   const pending=picks.filter(p=>!p.result).length;
   const total=w+l;
   const pct=total>0?Math.round(w/total*100):0;
-  const dogs=picks.filter(p=>p.line&&p.line.startsWith('+')&&p.result);
+  const dogs=picks.filter(p=>p.line&&p.line.startsWith('+')&&p.result&&p.result!=='P');
   const dogHits=dogs.filter(p=>p.result==='W').length;
   document.getElementById('cardDetailName').textContent=card.name;
   document.getElementById('cardDetailMeta').textContent=card.date+(card.venue?' · '+card.venue:'')+(picks.length?' · '+picks.length+' fights':'');
